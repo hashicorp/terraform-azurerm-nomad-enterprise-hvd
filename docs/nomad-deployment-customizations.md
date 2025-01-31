@@ -1,4 +1,4 @@
-# Deployment Customizations
+# Deployment customizations
 
 This page contains various deployment customizations related to creating your Nomad infrastructure and their corresponding module input variables that you may configure to meet your specific requirements where the default module values do not suffice. All of the module input variables mentioned on this page are optional.
 
