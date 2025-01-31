@@ -6,7 +6,7 @@
 # Azure DNS Zone and record for Nomad
 #------------------------------------------------------------------------------
 
-# Azure DNS Zone
+# Azure DNS zone
 resource "azurerm_dns_zone" "nomad" {
   count               = var.create_dns_nomad_record && var.nomad_dns_zone_name != null && var.nomad_fqdn != null ? 1 : 0
   name                = var.nomad_dns_zone_name
@@ -14,7 +14,7 @@ resource "azurerm_dns_zone" "nomad" {
   tags                = merge({ "Name" = "${var.friendly_name_prefix}-nomad-dns" }, var.common_tags)
 }
 
-# DNS A Record for Nomad Load Balancer
+# DNS A Record for Nomad load balancer
 resource "azurerm_dns_a_record" "nomad_alias_record" {
   count               = var.create_dns_nomad_record && var.nomad_dns_zone_name != null && var.nomad_fqdn != null && var.create_load_balancer ? 1 : 0
   name                = var.nomad_fqdn
