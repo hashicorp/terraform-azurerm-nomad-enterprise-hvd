@@ -1,0 +1,77 @@
+#------------------------------------------------------------------------------
+# Provider
+#------------------------------------------------------------------------------
+location = "eastus"
+
+#------------------------------------------------------------------------------
+# Common
+#------------------------------------------------------------------------------
+friendly_name_prefix = "nomad-cluster"
+common_tags = {
+  Environment = "production"
+  Project     = "nomad-deployment-example"
+}
+
+#------------------------------------------------------------------------------
+# Prereqs
+#------------------------------------------------------------------------------
+nomad_license_secret_id               = "https://my-key-vault.vault.azure.net/secrets/nomad-license"
+nomad_gossip_encryption_key_secret_id = "https://my-key-vault.vault.azure.net/secrets/gossip-key"
+nomad_tls_cert_secret_id              = "https://my-key-vault.vault.azure.net/secrets/nomad-tls-cert"
+nomad_tls_privkey_secret_id           = "https://my-key-vault.vault.azure.net/secrets/nomad-tls-privkey"
+nomad_tls_ca_bundle_secret_id         = "https://my-key-vault.vault.azure.net/secrets/nomad-tls-ca-bundle"
+additional_package_names              = ["htop", "curl", "jq"]
+resource_group_name                   = "nomad-example"
+
+#------------------------------------------------------------------------------
+# Nomad Configuration Settings
+#------------------------------------------------------------------------------
+nomad_acl_enabled         = true
+nomad_client              = true
+nomad_server              = true
+nomad_region              = "east-us"
+nomad_datacenter          = "dc1"
+nomad_ui_enabled          = true
+nomad_upstream_servers    = ["10.0.0.1", "10.0.0.2"]
+nomad_upstream_tag_key    = "NomadServer"
+nomad_upstream_tag_value  = "active"
+nomad_tls_enabled         = true
+autopilot_health_enabled  = true
+nomad_version             = "1.9.0+ent"
+cni_version               = "1.6.0"
+nomad_architecture        = "amd64"
+nomad_fqdn                = "nomad.mycompany.com"
+
+#------------------------------------------------------------------------------
+# Networking
+#------------------------------------------------------------------------------
+vnet_id                                = "/subscriptions/<subscription_id>/resourceGroups/<resource_group>/providers/Microsoft.Network/virtualNetworks/<vnet_name>"
+instance_subnets                      = ["/subscriptions/<subscription_id>/resourceGroups/<resource_group>/providers/Microsoft.Network/virtualNetworks/<vnet_name>/subnets/<subnet_name>"]
+subnet_id                             = "/subscriptions/<subscription_id>/resourceGroups/<resource_group>/providers/Microsoft.Network/virtualNetworks/<vnet_name>/subnets/<subnet_name>"
+associate_public_ip                   = false
+frontend_ip_config_name               = "frontend-ip-example"
+allowed_ingress_cidr                  = ["0.0.0.0/0"]
+allow_all_outbound                    = true
+additional_network_security_group_ids = []
+create_load_balancer                  = true
+lb_is_internal                        = true
+lb_subnet_ids                         = ["/subscriptions/<subscription_id>/resourceGroups/<resource_group>/providers/Microsoft.Network/virtualNetworks/<vnet_name>/subnets/<subnet_name>"]
+create_dns_zone                       = true
+dns_zone_name                         = "mycompany.com"
+
+#------------------------------------------------------------------------------
+# Compute
+#------------------------------------------------------------------------------
+vm_os_image                = "UbuntuLTS"
+vm_image_id                = null
+vm_size                    = "Standard_DS2_v2"
+nomad_nodes                = 6
+health_probe_grace_period  = 600
+enable_disk_encryption     = true
+disk_encryption_key_vault_id = "/subscriptions/<subscription_id>/resourceGroups/<resource_group>/providers/Microsoft.KeyVault/vaults/nomad-key"
+os_disk_size_gb            = 50
+os_disk_type               = "Premium_LRS"
+data_disk_size_gb          = 50
+data_disk_type             = "Premium_LRS"
+ssh_key_name               = "my-ssh-key"
+enable_azure_monitor       = true
