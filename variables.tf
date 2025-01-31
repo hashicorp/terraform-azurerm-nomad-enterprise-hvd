@@ -124,13 +124,13 @@ variable "nomad_upstream_servers" {
 
 variable "nomad_upstream_tag_key" {
   type        = string
-  description = "String of the tag key the Nomad client should look for in AWS to join with. Only needed for auto-joining the Nomad client."
+  description = "String of the tag key the Nomad client should look for in Azure to join with. Only needed for auto-joining the Nomad client."
   default     = null
 }
 
 variable "nomad_upstream_tag_value" {
   type        = string
-  description = "String of the tag value the Nomad client should look for in AWS to join with. Only needed for auto-joining the Nomad client."
+  description = "String of the tag value the Nomad client should look for in Azure to join with. Only needed for auto-joining the Nomad client."
   default     = null
 }
 
