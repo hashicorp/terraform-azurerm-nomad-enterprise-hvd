@@ -1,4 +1,4 @@
-# Nomad Version Upgrades
+# Nomad version upgrades
 
 Nomad follows a regular release cadence. See the [Nomad Releases](https://developer.hashicorp.com/nomad/docs/v1.8.x/release-notes) page for full details on the releases. Nomad upgrades are designed to be flexible, with two primary strategies: in-place upgrades, where the Nomad binary is updated without disrupting running allocations, and rolling upgrades, where new instances with the updated version replace old ones. To upgrade, update your Terraform code to reflect the new version, apply the changes to update the Azure VM scale set configuration, and replace or upgrade the VMs. Perform these steps during a maintenance window to ensure minimal disruption to workloads.
 
