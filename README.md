@@ -1,6 +1,6 @@
-# Nomad Enterprise HVD on Azure
+# Nomad Enterprise HVD on Azure VMs
 
-Terraform module aligned with HashiCorp Validated Designs (HVD) to deploy Nomad Enterprise on Microsoft Azure using Virtual Machines.
+Terraform module aligned with HashiCorp Validated Designs (HVD) to deploy Nomad Enterprise on Microsoft Azure using Azure Virtual Machines.
 
 ## Prerequisites
 
