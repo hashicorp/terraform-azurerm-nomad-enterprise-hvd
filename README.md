@@ -21,7 +21,7 @@ Terraform module aligned with HashiCorp Validated Designs (HVD) to deploy Nomad 
 
 #### Security groups
 
-- This module will create Network Security Groups (NSGs) for Nomad Virtual Machines.
+- This module will create network security groups (NSGs) for Nomad Virtual Machines.
 - Define CIDR ranges for Nomad access using the input variable `cidr_allow_ingress_nomad`.
 
 ### TLS certificates
