@@ -8,7 +8,7 @@ This module includes an input variable named `nomad_version` that dictates which
 
 1. Determine your desired version of Nomad from the [Nomad Upgrades](https://developer.hashicorp.com/nomad/docs/upgrade) page. The value you need will be in the **Version** column of the table.
 
-2. During a maintenance window, connect to your existing Nomad servers and gracefully drain them to ensure no new jobs are scheduled.
+1. During a maintenance window, connect to your existing Nomad servers and gracefully drain them to ensure no new jobs are scheduled.
 
     To gracefully drain the node:
 
@@ -20,18 +20,18 @@ This module includes an input variable named `nomad_version` that dictates which
 
     - [Nomad Node Drain](https://developer.hashicorp.com/nomad/docs/commands/node/drain)
 
-3. Generate a backup of your backend data (e.g., Consul, Vault, or other backends used).
+1. Generate a backup of your backend data (e.g. Consul, Vault, or other backends used).
 
-4. Update the value of the `nomad_version` input variable within your `terraform.tfvars` file to the desired Nomad version.
+1. Update the value of the `nomad_version` input variable within your `terraform.tfvars` file to the desired Nomad version.
 
     ```hcl
     nomad_version = "1.8.0"
     ```
    > 📝 **Note:** Nomad does not support downgrading at this time. Downgrading clients requires draining allocations and removing the data directory. Downgrading servers safely requires re-provisioning the cluster.
 
-5. From within the directory managing your Nomad deployment, run `terraform apply` to update the VM scale set configuration.
+1. From within the directory managing your Nomad deployment, run `terraform apply` to update the VM scale set configuration.
 
-6. Use the Azure Portal or Azure CLI to initiate a rolling upgrade on the Virtual Machine Scale Set. This will create new VMs with the updated configuration, effectively re-installing Nomad with the specified version (`nomad_version`).
+1. Use the Azure Portal or Azure CLI to initiate a rolling upgrade on the Virtual Machine Scale Set. This will create new VMs with the updated configuration, effectively re-installing Nomad with the specified version (`nomad_version`).
 
     For example, using the Azure CLI:
 
@@ -41,10 +41,10 @@ This module includes an input variable named `nomad_version` that dictates which
 
     Replace `<vmss-name>` with your Virtual Machine Scale Set name and `<resource-group-name>` with the resource group containing the scale set.
 
-7. Verify the upgrade by connecting to one of the new VMs and checking the installed Nomad version:
+1. Verify the upgrade by connecting to one of the new VMs and checking the installed Nomad version:
 
     ```sh
     nomad --version
     ```
 
-8. Once the new Nomad version is verified, remove any old VMs manually if not automatically handled by the scale set upgrade process.
+1. Once the new Nomad version is verified, remove any old VMs manually if not automatically handled by the scale set upgrade process.
