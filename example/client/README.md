@@ -1,6 +1,6 @@
 # Nomad Enterprise HVD - default example
 
-This example will deploy Nomad Clients to join an existing Nomad Cluster. The clients can join via specified DNS/IP addresses using the `nomad_upstream_servers` variable or other configurations like custom TLS settings for secure communication. No runtimes will be enabled by default. To enable a runtime, modify the `install_runtime` function in the `templates/nomad_custom_data.sh.tpl` file to include the desired configurations.
+This example will deploy Nomad clients to join an existing Nomad Cluster. The clients can join via specified DNS/IP addresses using the `nomad_upstream_servers` variable or other configurations like custom TLS settings for secure communication. No runtimes will be enabled by default. To enable a runtime, modify the `install_runtime` function in the `templates/nomad_custom_data.sh.tpl` file to include the desired configurations.
 
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
