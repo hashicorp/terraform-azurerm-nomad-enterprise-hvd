@@ -52,7 +52,7 @@ The following secrets must be stored in **Azure Key Vault** to bootstrap the Nom
 
 1. Configure the [prerequisites](#prerequisites).
 
-2. In the `examples` directory, you’ll find subdirectories with ready-made Terraform configurations for deploying this module. Select an example that matches your use case, and copy its contents to a new directory.
+1. In the `examples` directory, you will find subdirectories with ready-made Terraform configurations for deploying this module. Select an example that matches your use case, and copy its contents to a new directory.
 
     >📝 Example structure for managing multiple Nomad deployments:
 
@@ -75,11 +75,11 @@ The following secrets must be stored in **Azure Key Vault** to bootstrap the Nom
 
     >📝 This example has two separate Nomad deployments: one for a `sandbox` environment and one for a `production` environment.
 
-3. (Optional) If using Azure Blob Storage for remote state, configure the `backend.tf` file with custom values.
+1. (Optional) If using Azure Blob Storage for remote state, configure the `backend.tf` file with custom values.
 
-4. Update the `terraform.tfvars` file with your custom values, then run `terraform init`, `terraform plan`, and `terraform apply`.
+1. Update the `terraform.tfvars` file with your custom values, then run `terraform init`, `terraform plan`, and `terraform apply`.
 
-5. After `terraform apply` completes successfully, connect to the Nomad VM instance shell using SSH or Azure Bastion to monitor the cloud-init logs:
+1. After `terraform apply` completes successfully, connect to the Nomad VM instance shell using SSH or Azure Bastion to monitor the cloud-init logs:
 
     **Connecting to the VM instance:**
 
@@ -93,22 +93,22 @@ The following secrets must be stored in **Azure Key Vault** to bootstrap the Nom
     tail -f /var/log/nomad-cloud-init.log
     ```
 
-6. Once the installation finishes, verify the health of the Nomad cluster by checking the Nomad Web UI or by running:
+1. Once the installation finishes, verify the health of the Nomad cluster by checking the Nomad Web UI or by running:
 
     ```sh
     nomad server members
     ```
 
-7. If `nomad_acl_enabled` is `true`, the Nomad cluster will need to be bootstrapped with the command `nomad acl bootstrap`. This will generate a bootstrap token that can be used to log in to the CLI or UI.
+1. If `nomad_acl_enabled` is `true`, the Nomad cluster will need to be bootstrapped with the command `nomad acl bootstrap`. This will generate a bootstrap token that can be used to log in to the CLI or UI.
 
 ## Docs
 
 Additional documentation for managing and customizing your Nomad deployment is available in the `docs` folder:
 
-- Nomad Version Upgrades
-- Nomad TLS Certificate Rotation
-- Nomad Configuration Settings
-- Nomad Deployment Customizations
+- Nomad version upgrades
+- Nomad TLS certificate rotation
+- Nomad configuration settings
+- Nomad deployment customizations
 
 ## Module support
 
