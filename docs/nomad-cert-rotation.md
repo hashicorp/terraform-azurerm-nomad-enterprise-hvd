@@ -1,4 +1,4 @@
-# Nomad Certificate Rotation
+# Nomad certificate rotation
 
 One of the prerequisites for automating Nomad deployment is to store base64-encoded strings of your Nomad TLS certificate and private key files (in PEM format) as secrets in Azure Key Vault. The Nomad client and server `cloud-init` scripts (or equivalent user-data scripts) are designed to retrieve the latest values of these secrets when they run. Therefore, to update Nomad's TLS certificates, update the corresponding secrets in Azure Key Vault, then restart or replace the Nomad servers or clients to pick up the new certificates. Follow the steps below for detailed instructions.
 
