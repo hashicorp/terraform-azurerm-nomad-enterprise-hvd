@@ -18,9 +18,9 @@ Within the `templates/nomad_custom_data.sh.tpl` script, there is a function name
 
 1. Determine which [configuration setting](https://developer.hashicorp.com/nomad/docs/configuration) you would like to add, modify, or update.
 
-2. Find the corresponding variable in `variables.tf`.
+1. Find the corresponding variable in `variables.tf`.
 
-3. Specify the input within your Nomad module block. For example, if you want to modify the `nomad_datacenter` setting to a value other than the default:
+1. Specify the input within your Nomad module block. For example, if you want to modify the `nomad_datacenter` setting to a value other than the default:
 
     ```hcl
     module "nomad" {
@@ -32,8 +32,8 @@ Within the `templates/nomad_custom_data.sh.tpl` script, there is a function name
 
     > 📝 **Note:** If you'd prefer to hard-code the value directly, you can assign it directly in the module block and skip step 4.
 
-4. Verify the corresponding variable definition exists in your own `variables.tf` file. If it doesn’t exist, add it.
+1. Verify the corresponding variable definition exists in your own `variables.tf` file. If it doesn’t exist, add it.
 
-5. From within the Terraform directory managing your Nomad deployment, run `terraform apply` to update the Nomad EC2 launch template.
+1. From within the Terraform directory managing your Nomad deployment, run `terraform apply` to update the Nomad EC2 launch template.
 
-6. During a maintenance window, terminate the running Nomad EC2 instance(s). This will trigger the autoscaling group to spawn new instance(s) from the latest version of the Nomad EC2 launch template. This process will effectively reinstall Nomad on the new instance(s), including the updated configuration settings.
+1. During a maintenance window, terminate the running Nomad EC2 instance(s). This will trigger the autoscaling group to spawn new instance(s) from the latest version of the Nomad EC2 launch template. This process will effectively reinstall Nomad on the new instance(s), including the updated configuration settings.
