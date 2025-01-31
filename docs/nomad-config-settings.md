@@ -1,14 +1,14 @@
-# Nomad Configuration Settings
+# Nomad configuration settings
 
 To automate the Nomad install and configuration, the `templates/nomad_custom_data.sh.tpl` (cloud-init) script dynamically generates a `nomad.hcl` file containing all the necessary configuration settings required to start and run the Nomad client or server. Some of these configuration values are derived from interpolated values from other resources created by this module, while others are based on module input variables or automatically computed by the module itself.
 
 Since the Nomad installation and configuration are managed as code, and the persistent data (if any) is external to the compute nodes, you can treat your Nomad servers or clients as stateless, ephemeral, and immutable. If you need to add, modify, or update a configuration setting, do so in the Terraform code that manages your Nomad deployment. You should not manually modify settings in-place on the running Nomad instances, unless you are temporarily testing or troubleshooting something before committing a code change.
 
-## Configuration Settings Reference
+## Configuration settings reference
 
 The [Nomad Configuration Reference](https://developer.hashicorp.com/nomad/docs/configuration) page contains all available settings, their descriptions, and default values. If you need to configure one of these settings with a non-default value, find the corresponding variable in the `variables.tf` file of this module. You can specify the desired value within your Nomad module block.
 
-## Where to Look in the Code
+## Where to look in the code
 
 Within the `compute.tf` file, there is a `locals` block with a map called `custom_data_args`. Many of the Nomad configuration settings are passed from here as arguments into the `templates/nomad_config_data.sh.tpl` (cloud-init) script.
 
