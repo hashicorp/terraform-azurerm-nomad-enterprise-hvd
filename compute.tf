@@ -11,11 +11,11 @@ data "azurerm_resource_group" "nomad_rg" {
 locals {
   custom_data_args = {
     # Prereqs
-    nomad_license_source                  = var.nomad_license_secret_id == null ? "NONE" : var.nomad_license_secret_id
-    nomad_gossip_encryption_key_source    = var.nomad_gossip_encryption_key_secret_id == null ? "NONE" : var.nomad_gossip_encryption_key_secret_id
-    nomad_tls_cert_secret_id              = var.nomad_tls_cert_secret_id == null ? "NONE" : var.nomad_tls_cert_secret_id
-    nomad_tls_privkey_secret_id           = var.nomad_tls_privkey_secret_id == null ? "NONE" : var.nomad_tls_privkey_secret_id
-    nomad_tls_ca_bundle_secret_id         = var.nomad_tls_ca_bundle_secret_id == null ? "NONE" : var.nomad_tls_ca_bundle_secret_id
+    nomad_license_source               = var.nomad_license_secret_id == null ? "NONE" : var.nomad_license_secret_id
+    nomad_gossip_encryption_key_source = var.nomad_gossip_encryption_key_secret_id == null ? "NONE" : var.nomad_gossip_encryption_key_secret_id
+    nomad_tls_cert_secret_id           = var.nomad_tls_cert_secret_id == null ? "NONE" : var.nomad_tls_cert_secret_id
+    nomad_tls_privkey_secret_id        = var.nomad_tls_privkey_secret_id == null ? "NONE" : var.nomad_tls_privkey_secret_id
+    nomad_tls_ca_bundle_secret_id      = var.nomad_tls_ca_bundle_secret_id == null ? "NONE" : var.nomad_tls_ca_bundle_secret_id
     additional_package_names           = join(" ", var.additional_package_names)
 
     # Nomad Settings
@@ -58,13 +58,13 @@ data "azurerm_image" "custom" {
 # VM Configuration
 #------------------------------------------------------------------------------
 resource "azurerm_linux_virtual_machine_scale_set" "nomad" {
-  name                = "${var.friendly_name_prefix}-nomad-vmss"
-  resource_group_name = var.resource_group_name
-  location            = var.location
-  sku                 = var.vm_size
-  instances           = var.instance_count
-  admin_username      = var.admin_username
-  admin_password      = "testPassword1234!"
+  name                            = "${var.friendly_name_prefix}-nomad-vmss"
+  resource_group_name             = var.resource_group_name
+  location                        = var.location
+  sku                             = var.vm_size
+  instances                       = var.instance_count
+  admin_username                  = var.admin_username
+  admin_password                  = var.admin_password
   disable_password_authentication = false
 
   dynamic "admin_ssh_key" {
@@ -109,15 +109,15 @@ resource "azurerm_linux_virtual_machine_scale_set" "nomad" {
   }
 
   network_interface {
-    name                       = "${var.friendly_name_prefix}-nomad-nic"
-    primary                    = true
-    network_security_group_id  = azurerm_network_security_group.nomad.id
+    name                          = "${var.friendly_name_prefix}-nomad-nic"
+    primary                       = true
+    network_security_group_id     = azurerm_network_security_group.nomad.id
     enable_accelerated_networking = true
 
     ip_configuration {
-      name      = "${var.friendly_name_prefix}-nomad-ip"
-      primary   = true
-      subnet_id = var.subnet_id
+      name                                   = "${var.friendly_name_prefix}-nomad-ip"
+      primary                                = true
+      subnet_id                              = var.subnet_id
       load_balancer_backend_address_pool_ids = var.create_load_balancer ? [azurerm_lb_backend_address_pool.nomad_backend_pool.id] : []
     }
   }

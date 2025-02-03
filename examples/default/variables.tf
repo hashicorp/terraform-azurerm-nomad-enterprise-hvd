@@ -8,6 +8,11 @@ variable "location" {
   type        = string
   description = "Azure region where Nomad will be deployed."
   default     = "eastus"
+  # az account list-locations --output json | jq -r '.[].name' | sort | tr '\n' ' ' | sed 's/ /", "/g' | sed 's/^/"/' | sed 's/, "$//'
+  validation {
+    condition     = contains(["asia", "asiapacific", "australia", "australiacentral", "australiacentral2", "australiaeast", "australiasoutheast", "brazil", "brazilsouth", "brazilsoutheast", "brazilus", "canada", "canadacentral", "canadaeast", "centralindia", "centralus", "centraluseuap", "centralusstage", "eastasia", "eastasiastage", "eastus", "eastus2", "eastus2euap", "eastus2stage", "eastusstage", "eastusstg", "europe", "france", "francecentral", "francesouth", "germany", "germanynorth", "germanywestcentral", "global", "india", "israel", "israelcentral", "italy", "italynorth", "japan", "japaneast", "japanwest", "jioindiacentral", "jioindiawest", "korea", "koreacentral", "koreasouth", "mexicocentral", "newzealand", "northcentralus", "northcentralusstage", "northeurope", "norway", "norwayeast", "norwaywest", "poland", "polandcentral", "qatar", "qatarcentral", "singapore", "southafrica", "southafricanorth", "southafricawest", "southcentralus", "southcentralusstage", "southcentralusstg", "southeastasia", "southeastasiastage", "southindia", "spaincentral", "sweden", "swedencentral", "switzerland", "switzerlandnorth", "switzerlandwest", "uae", "uaecentral", "uaenorth", "uk", "uksouth", "ukwest", "unitedstates", "unitedstateseuap", "westcentralus", "westeurope", "westindia", "westus", "westus2", "westus2stage", "westus3", "westusstage"], var.location)
+    error_message = "Value specified is not a valid Azure region."
+  }
 }
 
 #------------------------------------------------------------------------------
@@ -26,6 +31,12 @@ variable "common_tags" {
   type        = map(string)
   description = "Map of common tags for taggable Azure resources."
   default     = {}
+}
+
+variable "create_resource_group" {
+  type        = bool
+  description = "Boolean to create a new Azure resource group for this deployment. Set to `false` if you want to use an existing resource group."
+  default     = false
 }
 
 variable "resource_group_name" {
@@ -91,9 +102,14 @@ variable "nomad_server" {
   description = "Boolean to enable the Nomad server agent."
 }
 
-variable "nomad_region" {
+# variable "nomad_region" {
+#   type        = string
+#   description = "Specifies the region of the local agent. If not specified, the region defaults to Azure region."
+#   default     = null
+# }
+variable "nomad_location" {
   type        = string
-  description = "Specifies the region of the local agent. If not specified, the region defaults to Azure region."
+  description = "Specifies the region of the local agent. Defaults to the Azure region if null."
   default     = null
 }
 
@@ -142,6 +158,10 @@ variable "nomad_version" {
   type        = string
   description = "Version of Nomad to install."
   default     = "1.9.0+ent"
+  validation {
+    condition     = can(regex("^[0-9]+\\.[0-9]+\\.[0-9]+\\+ent$", var.nomad_version))
+    error_message = "Value must be in the format 'X.Y.Z+ent'."
+  }
 }
 
 variable "cni_version" {
@@ -154,11 +174,20 @@ variable "nomad_architecture" {
   type        = string
   description = "Architecture of the Nomad binary to install."
   default     = "amd64"
+  validation {
+    condition     = can(regex("^(amd64|arm64)$", var.nomad_architecture))
+    error_message = "Value must be either 'amd64' or 'arm64'."
+  }
 }
 
 variable "nomad_fqdn" {
   type        = string
   description = "Fully qualified domain name of the Nomad Cluster, resolving to the load balancer IP address."
+  default     = null
+}
+variable "nomad_dns_zone_name" {
+  type        = string
+  description = "Azure DNS zone name to create the Nomad A record."
   default     = null
 }
 
@@ -175,10 +204,10 @@ variable "subnet_id" {
   description = "Azure subnet ID for Nomad instance network interface."
 }
 
-variable "instance_subnets" {
-  type        = list(string)
-  description = "List of Azure subnet IDs for instance(s) to be deployed into."
-}
+# variable "instance_subnets" {
+#   type        = list(string)
+#   description = "List of Azure subnet IDs for instance(s) to be deployed into."
+# }
 
 variable "associate_public_ip" {
   type        = bool
@@ -186,16 +215,21 @@ variable "associate_public_ip" {
   description = "Whether public IP addresses should automatically be attached to cluster nodes."
 }
 
-variable "allowed_ingress_cidr" {
+# variable "allowed_ingress_cidr" {
+#   type        = list(string)
+#   description = "List of CIDR ranges to allow ingress traffic on port 443 or 80 to Nomad server or load balancer."
+#   default     = ["0.0.0.0/0"]
+# }
+variable "cidr_allow_ingress_nomad" {
   type        = list(string)
-  description = "List of CIDR ranges to allow ingress traffic on port 443 or 80 to Nomad server or load balancer."
+  description = "CIDR ranges allowed ingress on port 443/80 for Nomad server/load balancer."
   default     = ["0.0.0.0/0"]
 }
 
-variable "allow_all_outbound" {
+variable "permit_all_egress" {
   type        = bool
+  description = "Allow unrestricted egress on cluster nodes. Additional rules may be required if disabled."
   default     = true
-  description = "Whether broad (0.0.0.0/0) egress should be permitted on cluster nodes."
 }
 
 variable "additional_network_security_group_ids" {
@@ -263,8 +297,8 @@ variable "vm_image_id" {
 
 variable "vm_size" {
   type        = string
-  default     = "Standard_DS2_v2"
-  description = "Azure VM size to launch."
+  description = "Azure VM size for Nomad VMs."
+  default     = "Standard_D2s_v3"
 }
 
 variable "nomad_nodes" {
@@ -324,4 +358,97 @@ variable "enable_azure_monitor" {
   type        = bool
   description = "Boolean to enable monitoring with Azure Monitor."
   default     = false
+}
+variable "vm_os_distro" {
+  type        = string
+  description = "OS distribution type for the Nomad VM. Choose from `Ubuntu`, `RHEL`, or `CentOS`."
+  default     = "Ubuntu"
+
+  validation {
+    condition     = contains(["Ubuntu", "RHEL", "CentOS"], var.vm_os_distro)
+    error_message = "Valid values are `Ubuntu`, `RHEL`, or `CentOS`."
+  }
+}
+
+variable "vm_sku" {
+  type        = string
+  description = "SKU for VM size for the VMSS."
+  default     = "Standard_D2s_v5"
+
+  validation {
+    condition     = can(regex("^[A-Za-z0-9_]+$", var.vm_sku))
+    error_message = "Value can only contain alphanumeric characters and underscores."
+  }
+}
+
+variable "vm_custom_image_name" {
+  type        = string
+  description = "Name of custom VM image to use for VMSS. If not using a custom image, leave this set to null."
+  default     = null
+}
+
+variable "vm_custom_image_rg_name" {
+  type        = string
+  description = "Resource Group name where the custom VM image resides. Only valid if `vm_custom_image_name` is not null."
+  default     = null
+}
+
+variable "vm_image_publisher" {
+  type        = string
+  description = "Publisher of the VM image."
+  default     = "Canonical"
+}
+
+variable "vm_image_offer" {
+  type        = string
+  description = "Offer of the VM image."
+  default     = "0001-com-ubuntu-server-jammy"
+}
+
+variable "vm_image_sku" {
+  type        = string
+  description = "SKU of the VM image."
+  default     = "22_04-lts-gen2"
+}
+
+variable "instance_count" {
+  type        = number
+  description = "Instance count for Azure Scale Set."
+  default     = 2
+}
+
+variable "vm_image_version" {
+  type        = string
+  description = "Version of the VM image."
+  default     = "latest"
+}
+
+variable "disk_size_gb" {
+  type        = number
+  description = "Size of OS disk for Nomad VMs in GB."
+  default     = 50
+}
+
+variable "disk_type" {
+  type        = string
+  description = "Disk type for Nomad VMs. Options: `Standard_LRS`, `Premium_LRS`, etc."
+  default     = "Standard_LRS"
+}
+
+variable "admin_username" {
+  type        = string
+  description = "Admin username for VM instance."
+  default     = "ubuntu"
+}
+
+variable "admin_password" {
+  type        = string
+  description = "Admin password for VM instance."
+  default     = "testPassword1234!"
+}
+
+variable "ssh_public_key" {
+  type        = string
+  description = "SSH public key for bastion VM instance."
+  default     = null
 }
