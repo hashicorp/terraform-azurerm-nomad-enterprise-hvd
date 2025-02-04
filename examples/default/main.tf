@@ -38,12 +38,14 @@ module "nomad" {
   # --- Networking --- #
   permit_all_egress        = var.permit_all_egress
   vnet_id                  = var.vnet_id
+  vnet_name                = var.vnet_name
   associate_public_ip      = var.associate_public_ip
   autopilot_health_enabled = var.autopilot_health_enabled
   lb_is_internal           = var.lb_is_internal
   cidr_allow_ingress_nomad = var.cidr_allow_ingress_nomad
   create_load_balancer     = var.create_load_balancer
-  subnet_id                = var.subnet_id
+  #subnet_id                = var.subnet_id
+  subnet_name = var.subnet_name
 
   # --- Nomad config settings --- #
   nomad_version          = var.nomad_version

@@ -12,15 +12,12 @@ resource "azurerm_user_assigned_identity" "nomad_vm_identity" {
   resource_group_name = var.resource_group_name
 }
 
-data "azurerm_subscription" "primary" {}
-
-data "azurerm_client_config" "current" {}
 
 # Custom Role Definition for Nomad VM Access
 resource "azurerm_role_assignment" "nomad_vm_reader_role" {
-  principal_id            = azurerm_user_assigned_identity.nomad_vm_identity.principal_id
-  role_definition_name    = "Reader" # Allows read access to all resources in the resource group
-  scope                   = data.azurerm_resource_group.nomad_rg.id
+  principal_id         = azurerm_user_assigned_identity.nomad_vm_identity.principal_id
+  role_definition_name = "Reader" # Allows read access to all resources in the resource group
+  scope                = data.azurerm_resource_group.nomad_rg.id
 }
 
 #------------------------------------------------------------------------------

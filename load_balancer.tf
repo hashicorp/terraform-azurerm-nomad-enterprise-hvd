@@ -3,7 +3,7 @@
 
 
 #------------------------------------------------------------------------------
-# Azure Load Balancer 
+# Azure Load Balancer
 #------------------------------------------------------------------------------
 
 resource "azurerm_public_ip" "nomad_frontend_ip" {
@@ -21,7 +21,8 @@ resource "azurerm_lb" "nomad_lb" {
   resource_group_name = var.resource_group_name
   sku                 = "Standard"
   frontend_ip_configuration {
-    name                 = var.frontend_ip_config_name
+    #name                 = var.frontend_ip_config_name
+    name                 = "${var.friendly_name_prefix}-nomad-frontend-ip"
     public_ip_address_id = azurerm_public_ip.nomad_frontend_ip.id
   }
 
@@ -33,31 +34,32 @@ resource "azurerm_lb" "nomad_lb" {
 
 # Backend Pool
 resource "azurerm_lb_backend_address_pool" "nomad_backend_pool" {
-  loadbalancer_id   = azurerm_lb.nomad_lb.id
-  name              = "${var.friendly_name_prefix}-nomad-backend-pool"
+  loadbalancer_id = azurerm_lb.nomad_lb.id
+  name            = "${var.friendly_name_prefix}-nomad-backend-pool"
 }
 
 # Load Balancer Health Probe
 resource "azurerm_lb_probe" "nomad_probe" {
-  loadbalancer_id = azurerm_lb.nomad_lb.id
-  name            = "${var.friendly_name_prefix}-nomad-probe"
-  protocol        = var.nomad_tls_enabled ? "Https" : "Http"
-  port            = 4646
-  request_path    = "/v1/agent/health"
+  loadbalancer_id     = azurerm_lb.nomad_lb.id
+  name                = "${var.friendly_name_prefix}-nomad-probe"
+  protocol            = var.nomad_tls_enabled ? "Https" : "Http"
+  port                = 4646
+  request_path        = "/v1/agent/health"
   interval_in_seconds = 30
   number_of_probes    = 5
 }
 
 # Load Balancer Rule for Nomad (Port 4646)
 resource "azurerm_lb_rule" "nomad_lb_rule_4646" {
-  loadbalancer_id                = azurerm_lb.nomad_lb.id
-  name                           = "${var.friendly_name_prefix}-nomad-lb-rule-4646"
-  protocol                       = "Tcp"
-  frontend_port                  = var.nomad_tls_enabled ? 443 : 80
-  backend_port                   = 4646
-  frontend_ip_configuration_name = var.frontend_ip_config_name
-  backend_address_pool_ids   = [azurerm_lb_backend_address_pool.nomad_backend_pool.id]
-  probe_id                   = azurerm_lb_probe.nomad_probe.id
+  loadbalancer_id = azurerm_lb.nomad_lb.id
+  name            = "${var.friendly_name_prefix}-nomad-lb-rule-4646"
+  protocol        = "Tcp"
+  frontend_port   = var.nomad_tls_enabled ? 443 : 80
+  backend_port    = 4646
+  # frontend_ip_configuration_name                 = var.frontend_ip_config_name
+  frontend_ip_configuration_name = "${var.friendly_name_prefix}-nomad-frontend-ip"
+  backend_address_pool_ids       = [azurerm_lb_backend_address_pool.nomad_backend_pool.id]
+  probe_id                       = azurerm_lb_probe.nomad_probe.id
 
   idle_timeout_in_minutes = 15
 }
@@ -67,8 +69,8 @@ resource "azurerm_lb_rule" "nomad_lb_rule_4646" {
 #------------------------------------------------------------------------------
 
 data "azurerm_subnet" "nomad_subnet" {
-  name                 = "acme-tfe-compute-subnet"
-  virtual_network_name = "acme-nomad-test-vnet"
+  name                 = var.subnet_name
+  virtual_network_name = var.vnet_name
   resource_group_name  = var.resource_group_name
 }
 
@@ -134,6 +136,6 @@ resource "azurerm_network_interface" "nomad_lb_nic" {
 
 # Associate the Security Groups with Load Balancer Network Interfaces
 resource "azurerm_network_interface_security_group_association" "lb_nsg_association" {
-  network_interface_id = azurerm_network_interface.nomad_lb_nic.id
+  network_interface_id      = azurerm_network_interface.nomad_lb_nic.id
   network_security_group_id = azurerm_network_security_group.lb_nsg.id
 }

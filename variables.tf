@@ -198,10 +198,15 @@ variable "vnet_id" {
   type        = string
   description = "ID of the Azure Virtual Network resources are deployed into."
 }
-
-variable "subnet_id" {
+variable "vnet_name" {
   type        = string
-  description = "Azure subnet ID for Nomad instance network interface."
+  description = "Name of the Azure Virtual Network resources are deployed into."
+}
+
+
+variable "subnet_name" {
+  type        = string
+  description = "Azure subnet name for Nomad instance network interface."
 }
 
 # variable "instance_subnets" {
