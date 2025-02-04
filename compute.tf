@@ -4,12 +4,14 @@
 #------------------------------------------------------------------------------
 # User Data (cloud-init) Arguments for Nomad on Azure
 #------------------------------------------------------------------------------
-data "azurerm_resource_group" "nomad_rg" {
-  name = var.resource_group_name
-}
+
 
 locals {
   custom_data_args = {
+    tenant_id       = data.azurerm_client_config.current.tenant_id
+    client_id       = data.azurerm_client_config.current.client_id
+    subscription_id = data.azurerm_subscription.primary.subscription_id
+
     # Prereqs
     nomad_license_source               = var.nomad_license_secret_id == null ? "NONE" : var.nomad_license_secret_id
     nomad_gossip_encryption_key_source = var.nomad_gossip_encryption_key_secret_id == null ? "NONE" : var.nomad_gossip_encryption_key_secret_id
@@ -117,7 +119,7 @@ resource "azurerm_linux_virtual_machine_scale_set" "nomad" {
     ip_configuration {
       name                                   = "${var.friendly_name_prefix}-nomad-ip"
       primary                                = true
-      subnet_id                              = var.subnet_id
+      subnet_id                              = data.azurerm_subnet.nomad_subnet.id
       load_balancer_backend_address_pool_ids = var.create_load_balancer ? [azurerm_lb_backend_address_pool.nomad_backend_pool.id] : []
     }
   }
