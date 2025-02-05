@@ -41,6 +41,7 @@ variable "nomad_key_vault_name" {
   description = "ID of Azure Key Vault secret for Nomad license file."
   default     = null
 }
+
 variable "nomad_license_secret_id" {
   type        = string
   description = "ID of Azure Key Vault secret for Nomad license file."
@@ -174,11 +175,6 @@ variable "vnet_id" {
   type        = string
   description = "ID of the Azure Virtual Network resources are deployed into."
 }
-
-# variable "subnet_ids" {
-#   type        = list(string)
-#   description = "List of Azure subnet IDs for Nomad instance(s)."
-# }
 
 variable "subnet_id" {
   type        = string

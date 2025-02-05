@@ -78,30 +78,6 @@ variable "additional_package_names" {
   default     = []
 }
 
-variable "tenant_id" {
-  description = "Azure Tenant ID for Nomad server join"
-  type        = string
-  sensitive   = true
-}
-
-variable "client_id" {
-  description = "Azure Client ID for Nomad server join"
-  type        = string
-  sensitive   = true
-}
-
-variable "subscription_id" {
-  description = "Azure Subscription ID for Nomad server join"
-  type        = string
-  sensitive   = true
-}
-
-variable "secret_access_key" {
-  description = "Azure Secret Access Key for Nomad server join"
-  type        = string
-  sensitive   = true
-}
-
 #------------------------------------------------------------------------------
 # Nomad Configuration Settings
 #------------------------------------------------------------------------------
