@@ -36,6 +36,11 @@ variable "resource_group_name" {
 #------------------------------------------------------------------------------
 # Prereqs
 #------------------------------------------------------------------------------
+variable "nomad_key_vault_name" {
+  type        = string
+  description = "ID of Azure Key Vault secret for Nomad license file."
+  default     = null
+}
 variable "nomad_license_secret_id" {
   type        = string
   description = "ID of Azure Key Vault secret for Nomad license file."

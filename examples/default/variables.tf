@@ -36,6 +36,12 @@ variable "resource_group_name" {
 #------------------------------------------------------------------------------
 # Prereqs
 #------------------------------------------------------------------------------
+variable "nomad_key_vault_name" {
+  type        = string
+  description = "ID of Azure Key Vault secret for Nomad license file."
+  default     = null
+}
+
 variable "nomad_license_secret_id" {
   type        = string
   description = "ID of Azure Key Vault secret for Nomad license file."
@@ -70,6 +76,30 @@ variable "additional_package_names" {
   type        = set(string)
   description = "List of additional repository package names to install"
   default     = []
+}
+
+variable "tenant_id" {
+  description = "Azure Tenant ID for Nomad server join"
+  type        = string
+  sensitive   = true
+}
+
+variable "client_id" {
+  description = "Azure Client ID for Nomad server join"
+  type        = string
+  sensitive   = true
+}
+
+variable "subscription_id" {
+  description = "Azure Subscription ID for Nomad server join"
+  type        = string
+  sensitive   = true
+}
+
+variable "secret_access_key" {
+  description = "Azure Secret Access Key for Nomad server join"
+  type        = string
+  sensitive   = true
 }
 
 #------------------------------------------------------------------------------

@@ -15,6 +15,7 @@ common_tags = {
 #------------------------------------------------------------------------------
 # Prereqs
 #------------------------------------------------------------------------------
+nomad_key_vault_name                  = "your-key-vault"
 nomad_license_secret_id               = "<https://my-key-vault.vault.azure.net/secrets/nomad-license>"
 nomad_gossip_encryption_key_secret_id = "<https://my-key-vault.vault.azure.net/secrets/gossip-key>"
 nomad_tls_cert_secret_id              = "<https://my-key-vault.vault.azure.net/secrets/nomad-tls-cert>"
@@ -22,6 +23,10 @@ nomad_tls_privkey_secret_id           = "<https://my-key-vault.vault.azure.net/s
 nomad_tls_ca_bundle_secret_id         = "<https://my-key-vault.vault.azure.net/secrets/nomad-tls-ca-bundle>"
 additional_package_names              = ["htop", "curl", "jq"]
 resource_group_name                   = "<nomad-example>"
+tenant_id                             = "your-tenant-id-here"
+client_id                             = "your-client-id-here"
+subscription_id                       = "your-subscription-id-here"
+secret_access_key                     = "your-secret-access-key-here"
 
 #------------------------------------------------------------------------------
 # Nomad Configuration Settings

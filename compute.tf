@@ -11,8 +11,8 @@ data "azurerm_resource_group" "nomad_rg" {
 locals {
   custom_data_args = {
     # Prereqs
-    nomad_license_source                  = var.nomad_license_secret_id == null ? "NONE" : var.nomad_license_secret_id
-    nomad_gossip_encryption_key_source    = var.nomad_gossip_encryption_key_secret_id == null ? "NONE" : var.nomad_gossip_encryption_key_secret_id
+    nomad_license_secret_id               = var.nomad_license_secret_id 
+    nomad_gossip_encryption_key_secret_id = var.nomad_gossip_encryption_key_secret_id 
     nomad_tls_cert_secret_id              = var.nomad_tls_cert_secret_id == null ? "NONE" : var.nomad_tls_cert_secret_id
     nomad_tls_privkey_secret_id           = var.nomad_tls_privkey_secret_id == null ? "NONE" : var.nomad_tls_privkey_secret_id
     nomad_tls_ca_bundle_secret_id         = var.nomad_tls_ca_bundle_secret_id == null ? "NONE" : var.nomad_tls_ca_bundle_secret_id
@@ -76,7 +76,10 @@ resource "azurerm_linux_virtual_machine_scale_set" "nomad" {
     }
   }
 
-  boot_diagnostics {
+  identity {
+    type = "UserAssigned"
+    identity_ids = [azurerm_user_assigned_identity.nomad_vm_identity.id]
+
   }
 
   custom_data = base64encode(templatefile("${path.module}/templates/nomad_custom_data.sh.tpl", local.custom_data_args))
@@ -167,6 +170,18 @@ resource "azurerm_network_security_group" "nomad" {
     destination_address_prefix = "*"
   }
 
+  security_rule {
+    name                       = "allow_udp_gossip"
+    priority                   = 1003
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Udp"
+    source_port_range          = "*"
+    destination_port_range     = "4648"
+    source_address_prefix      = "*"
+    destination_address_prefix = "*"
+  }
+  
   tags = merge(
     { "Name" = "${var.friendly_name_prefix}-nsg" },
     var.common_tags
