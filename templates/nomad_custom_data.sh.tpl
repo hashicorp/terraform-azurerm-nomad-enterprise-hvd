@@ -285,7 +285,7 @@ server {
 
   bootstrap_expect = "${nomad_nodes}"
   license_path     = "$NOMAD_DIR_LICENSE/license.hclic"
-  encrypt          = "$NOMAD_GOSSIP_ENCRYPTION_KEY"
+  encrypt          = "$GOSSIP_ENCRYPTION_KEY"
 
   server_join {
     retry_join = [$NOMAD_SERVERS]
@@ -414,12 +414,10 @@ function main {
     install_cni_plugins
     %{ endif ~}
     %{ if nomad_server ~}
-    %{ if azure_keyvault != false ~}
     log "INFO" "Grabbing Secrets from ${nomad_license_secret_id}."
     retrieve_license "$NOMAD_LICENSE_SECRET_ID" ${nomad_license_secret_id} 
     log "INFO" "Grabbing Secrets from ${nomad_gossip_encryption_key_secret_id}."
     retrieve_gossip_key "$NOMAD_GOSSIP_ENCRYPTION_KEY_ID" ${nomad_gossip_encryption_key_secret_id} 
-    %{ endif ~}
     %{ endif ~}
     %{ if nomad_tls_enabled ~}
     log "INFO" "is ${nomad_tls_enabled} ?."
