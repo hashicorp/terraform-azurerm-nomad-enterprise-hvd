@@ -67,8 +67,8 @@ resource "azurerm_lb_rule" "nomad_lb_rule_4646" {
 #------------------------------------------------------------------------------
 
 data "azurerm_subnet" "nomad_subnet" {
-  name                 = "acme-tfe-compute-subnet"
-  virtual_network_name = "acme-nomad-test-vnet"
+  name                 = var.subnet_name
+  virtual_network_name = var.vnet_name
   resource_group_name  = var.resource_group_name
 }
 

@@ -197,6 +197,16 @@ variable "subnet_id" {
   description = "Azure subnet ID for Nomad instance network interface."
 }
 
+variable "vnet_name" {
+  type        = string
+  description = "Name of the Azure VNet where resources are deployed."
+}
+
+variable "subnet_name" {
+  type        = string
+  description = "Name of the Azure subnet where resources are deployed."
+}
+
 variable "associate_public_ip" {
   type        = bool
   description = "Whether to associate public IPs with the Nomad cluster VMs."
