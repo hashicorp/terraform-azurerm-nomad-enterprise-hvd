@@ -22,7 +22,7 @@ nomad_tls_cert_secret_id              = "<https://my-key-vault.vault.azure.net/s
 nomad_tls_privkey_secret_id           = "<https://my-key-vault.vault.azure.net/secrets/nomad-tls-privkey>"
 nomad_tls_ca_bundle_secret_id         = "<https://my-key-vault.vault.azure.net/secrets/nomad-tls-ca-bundle>"
 additional_package_names              = ["htop", "curl", "jq"]
-resource_group_name                   = "nomad-example"
+resource_group_name                   = "<nomad-example>"
 
 #------------------------------------------------------------------------------
 # Nomad Configuration Settings
