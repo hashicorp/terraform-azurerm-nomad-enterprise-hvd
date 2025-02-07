@@ -218,6 +218,7 @@ function create_directories {
         "$NOMAD_DIR_LOGS"
         "$NOMAD_DIR_BIN"
         "$CNI_DIR_BIN"
+        "$NOMAD_DIR_ALLOC_MOUNTS"
     )
 
     for dir in "$${directories[@]}"; do
@@ -426,6 +427,7 @@ function main {
     %{ if nomad_tls_ca_bundle_secret_id != "NONE" ~}
     retrieve_secret "$NOMAD_TLS_CA_BUNDLE_SECRET_ID" "$NOMAD_DIR_TLS/bundle.pem"
     %{ endif ~}
+    chown -R $NOMAD_USER:$NOMAD_GROUP $NOMAD_DIR_TLS
     chmod 640 $NOMAD_DIR_TLS/*pem
     %{ endif ~}
     generate_nomad_config
