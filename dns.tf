@@ -19,7 +19,7 @@ data "azurerm_private_dns_zone" "nomad" {
 }
 
 #------------------------------------------------------------------------------
-# DNS A Record
+# DNS A record
 #------------------------------------------------------------------------------
 locals {
   nomad_hostname_public  = var.create_nomad_public_dns_record == true && var.public_dns_zone_name != null ? trimsuffix(substr(var.nomad_fqdn, 0, length(var.nomad_fqdn) - length(var.public_dns_zone_name) - 1), ".") : var.nomad_fqdn
