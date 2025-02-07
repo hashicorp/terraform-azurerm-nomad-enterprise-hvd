@@ -11,12 +11,12 @@ data "azurerm_resource_group" "nomad_rg" {
 locals {
   custom_data_args = {
     # Prereqs
-    nomad_license_source                  = var.nomad_license_secret_id == null ? "NONE" : var.nomad_license_secret_id
-    nomad_gossip_encryption_key_source    = var.nomad_gossip_encryption_key_secret_id == null ? "NONE" : var.nomad_gossip_encryption_key_secret_id
+    nomad_license_secret_id               = var.nomad_license_secret_id
+    nomad_gossip_encryption_key_secret_id = var.nomad_gossip_encryption_key_secret_id
     nomad_tls_cert_secret_id              = var.nomad_tls_cert_secret_id == null ? "NONE" : var.nomad_tls_cert_secret_id
     nomad_tls_privkey_secret_id           = var.nomad_tls_privkey_secret_id == null ? "NONE" : var.nomad_tls_privkey_secret_id
     nomad_tls_ca_bundle_secret_id         = var.nomad_tls_ca_bundle_secret_id == null ? "NONE" : var.nomad_tls_ca_bundle_secret_id
-    additional_package_names           = join(" ", var.additional_package_names)
+    additional_package_names              = join(" ", var.additional_package_names)
 
     # Nomad Settings
     nomad_version            = var.nomad_version
@@ -62,21 +62,21 @@ resource "azurerm_linux_virtual_machine_scale_set" "nomad" {
   resource_group_name = var.resource_group_name
   location            = var.location
   sku                 = var.vm_size
-  instances           = var.instance_count
+  instances           = var.nomad_nodes
   admin_username      = var.admin_username
-  admin_password      = "testPassword1234!"
-  disable_password_authentication = false
 
   dynamic "admin_ssh_key" {
-    for_each = var.ssh_public_key != null ? [1] : []
+    for_each = var.vm_ssh_public_key != null ? [1] : []
 
     content {
       username   = var.admin_username
-      public_key = file(var.ssh_public_key)
+      public_key = var.vm_ssh_public_key
     }
   }
 
-  boot_diagnostics {
+  identity {
+    type         = "UserAssigned"
+    identity_ids = [azurerm_user_assigned_identity.nomad_vm_identity.id]
   }
 
   custom_data = base64encode(templatefile("${path.module}/templates/nomad_custom_data.sh.tpl", local.custom_data_args))
@@ -109,18 +109,29 @@ resource "azurerm_linux_virtual_machine_scale_set" "nomad" {
   }
 
   network_interface {
-    name                       = "${var.friendly_name_prefix}-nomad-nic"
-    primary                    = true
-    network_security_group_id  = azurerm_network_security_group.nomad.id
+    name                          = "${var.friendly_name_prefix}-nomad-nic"
+    primary                       = true
+    network_security_group_id     = azurerm_network_security_group.nomad.id
     enable_accelerated_networking = true
 
     ip_configuration {
-      name      = "${var.friendly_name_prefix}-nomad-ip"
-      primary   = true
-      subnet_id = var.subnet_id
-      load_balancer_backend_address_pool_ids = var.create_load_balancer ? [azurerm_lb_backend_address_pool.nomad_backend_pool.id] : []
+      name                                   = "${var.friendly_name_prefix}-nomad-ip"
+      primary                                = true
+      subnet_id                              = var.subnet_id
+      load_balancer_backend_address_pool_ids = var.create_load_balancer ? [azurerm_lb_backend_address_pool.nomad_backend_pool[0].id] : []
     }
   }
+
+  dynamic "boot_diagnostics" {
+    for_each = var.vm_enable_boot_diagnostics == true ? [1] : []
+    content {}
+  }
+
+  tags = merge(
+    { "Name" = "${var.friendly_name_prefix}-boundary-vmss" },
+    var.common_tags
+  )
+
 }
 
 #------------------------------------------------------------------------------
@@ -167,20 +178,20 @@ resource "azurerm_network_security_group" "nomad" {
     destination_address_prefix = "*"
   }
 
+  security_rule {
+    name                       = "allow_udp_gossip"
+    priority                   = 1003
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Udp"
+    source_port_range          = "*"
+    destination_port_range     = "4648"
+    source_address_prefix      = "*"
+    destination_address_prefix = "*"
+  }
+
   tags = merge(
     { "Name" = "${var.friendly_name_prefix}-nsg" },
-    var.common_tags
-  )
-}
-
-resource "azurerm_public_ip" "nomad" {
-  name                = "${var.friendly_name_prefix}-public-ip"
-  location            = var.location
-  resource_group_name = var.resource_group_name
-  allocation_method   = "Dynamic"
-
-  tags = merge(
-    { "Name" = "${var.friendly_name_prefix}-public-ip" },
     var.common_tags
   )
 }

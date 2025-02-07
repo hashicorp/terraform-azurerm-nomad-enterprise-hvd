@@ -36,6 +36,12 @@ variable "resource_group_name" {
 #------------------------------------------------------------------------------
 # Prereqs
 #------------------------------------------------------------------------------
+variable "nomad_key_vault_name" {
+  type        = string
+  description = "ID of Azure Key Vault secret for Nomad license file."
+  default     = null
+}
+
 variable "nomad_license_secret_id" {
   type        = string
   description = "ID of Azure Key Vault secret for Nomad license file."
@@ -108,24 +114,6 @@ variable "nomad_ui_enabled" {
   default     = true
 }
 
-variable "nomad_upstream_servers" {
-  type        = list(string)
-  description = "List of Nomad server addresses to join the Nomad client with."
-  default     = null
-}
-
-variable "nomad_upstream_tag_key" {
-  type        = string
-  description = "String of the tag key the Nomad client should look for in Azure to join with. Only needed for auto-joining the Nomad client."
-  default     = null
-}
-
-variable "nomad_upstream_tag_value" {
-  type        = string
-  description = "String of the tag value the Nomad client should look for in Azure to join with. Only needed for auto-joining the Nomad client."
-  default     = null
-}
-
 variable "nomad_tls_enabled" {
   type        = bool
   description = "Boolean to enable TLS for Nomad."
@@ -170,14 +158,19 @@ variable "vnet_id" {
   description = "ID of the Azure Virtual Network resources are deployed into."
 }
 
-# variable "subnet_ids" {
-#   type        = list(string)
-#   description = "List of Azure subnet IDs for Nomad instance(s)."
-# }
-
 variable "subnet_id" {
   type        = string
   description = "Azure subnet ID for Nomad instance network interface."
+}
+
+variable "vnet_name" {
+  type        = string
+  description = "Name of the Azure VNet where resources are deployed."
+}
+
+variable "subnet_name" {
+  type        = string
+  description = "Name of the Azure subnet where resources are deployed."
 }
 
 variable "instance_subnets" {

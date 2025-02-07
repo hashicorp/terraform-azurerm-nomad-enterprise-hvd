@@ -8,6 +8,7 @@ NOMAD_CONFIG_PATH="$NOMAD_DIR_CONFIG/nomad.hcl"
 NOMAD_DIR_TLS="/etc/nomad.d/tls"
 NOMAD_DIR_DATA="/opt/nomad/data"
 NOMAD_DIR_LICENSE="/opt/nomad/license"
+NOMAD_LICENSE_PATH="$NOMAD_DIR_LICENSE/license.hclic"
 NOMAD_DIR_ALLOC_MOUNTS="/opt/nomad/alloc_mounts"
 NOMAD_DIR_LOGS="/var/log/nomad"
 NOMAD_DIR_BIN="/usr/bin"
@@ -22,8 +23,8 @@ ADDITIONAL_PACKAGES="${additional_package_names}"
 NOMAD_TLS_CERT_SECRET_ID="${nomad_tls_cert_secret_id}"
 NOMAD_TLS_PRIVKEY_SECRET_ID="${nomad_tls_privkey_secret_id}"
 NOMAD_TLS_CA_BUNDLE_SECRET_ID="${nomad_tls_ca_bundle_secret_id}"
-NOMAD_LICENSE_SOURCE="${nomad_license_source}"
-NOMAD_GOSSIP_ENCRYPTION_KEY_SOURCE="${nomad_gossip_encryption_key_source}"
+NOMAD_LICENSE_SECRET_ID="${nomad_license_secret_id}"
+NOMAD_GOSSIP_ENCRYPTION_KEY_ID="${nomad_gossip_encryption_key_secret_id}"
 NOMAD_TLS_ENABLED="${nomad_tls_enabled}"
 NOMAD_ACL_ENABLED="${nomad_acl_enabled}"
 NOMAD_CLIENT="${nomad_client}"
@@ -33,6 +34,7 @@ NOMAD_LOCATION="${nomad_location}"
 NOMAD_UI_ENABLED="${nomad_ui_enabled}"
 NOMAD_NODES="${nomad_nodes}"
 AUTOPILOT_HEALTH_ENABLED="${autopilot_health_enabled}"
+
 
 function log {
     local level="$1"
@@ -130,6 +132,13 @@ EOF
       dnf install -y azure-cli
     fi
   fi
+  log "INFO" "Attempting Azure login using Managed Identity..."
+  if az login --identity &>/dev/null; then
+    log "INFO" "Azure login successful."
+  else
+    log "ERROR" "Azure login failed! Ensure the VM has a Managed Identity."
+    exit 1
+  fi
 }
 
 function scrape_vm_info {
@@ -137,8 +146,10 @@ function scrape_vm_info {
 
     INSTANCE_ID=$(curl -s -H "Metadata:true" --noproxy "*" "http://169.254.169.254/metadata/instance/compute/vmId?api-version=2021-02-01&format=text")
     LOCATION=$(curl -s -H "Metadata:true" --noproxy "*" "http://169.254.169.254/metadata/instance/compute/location?api-version=2021-02-01&format=text")
+    RESOURCE_GROUP=$(curl -s -H Metadata:true --noproxy "*" "http://169.254.169.254/metadata/instance/compute/resourceGroupName?api-version=2021-02-01&format=text")
+    VMSS_NAME=$(curl -s -H Metadata:true --noproxy "*" "http://169.254.169.254/metadata/instance/compute/vmScaleSetName?api-version=2021-02-01&format=text")
 
-    log "INFO" "VM ID: $INSTANCE_ID, Location: $LOCATION."
+    log "INFO" "VM ID: $INSTANCE_ID, Location: $LOCATION, Resource Group: $RESOURCE_GROUP, VMSS Name: $VMSS_NAME."
 }
 
 # For Nomad there are a number of supported runtimes, including Exec, Docker, Podman, raw_exec, and more. This function should be modified 
@@ -158,8 +169,32 @@ function retrieve_secret {
     fi
 
     log "INFO" "Retrieving secret $secret_id for $destination."
-    az keyvault secret show --id "$secret_id" --query value -o tsv > "$destination"
-    chmod 600 "$destination"
+    az keyvault secret show --id "$secret_id" --query value -o tsv | base64 -d > "$destination"
+}
+
+function retrieve_license {
+    local secret_id="$1"
+
+    if [[ "$secret_id" == "NONE" ]]; then
+        log "INFO" "No license to retrieve."
+        return
+    fi
+
+    log "INFO" "Retrieving license."
+    NOMAD_LICENSE=$(az keyvault secret show --id "$secret_id" --query value -o tsv)
+    echo "$NOMAD_LICENSE" >$NOMAD_LICENSE_PATH
+}
+
+function retrieve_gossip_key {
+    local secret_id="$1"
+
+    if [[ "$secret_id" == "NONE" ]]; then
+        log "INFO" "No gossip key to retrieve."
+        return
+    fi
+
+    log "INFO" "Retrieving gossip key."
+    GOSSIP_ENCRYPTION_KEY=$(az keyvault secret show --id "$secret_id" --query value -o tsv)
 }
 
 function create_user_and_group {
@@ -178,10 +213,12 @@ function create_directories {
         "$NOMAD_DIR_CONFIG"
         "$NOMAD_DIR_TLS"
         "$NOMAD_DIR_DATA"
+        "$NOMAD_DIR_ALLOC_MOUNTS"
         "$NOMAD_DIR_LICENSE"
         "$NOMAD_DIR_LOGS"
         "$NOMAD_DIR_BIN"
         "$CNI_DIR_BIN"
+        "$NOMAD_DIR_ALLOC_MOUNTS"
     )
 
     for dir in "$${directories[@]}"; do
@@ -213,24 +250,19 @@ function install_nomad {
     log "INFO" "Nomad installation complete."
 }
 
-# function configure_sysctl {
-#     log "INFO" "Configuring sysctl settings..."
-
-#     # Configure sysctl settings for Nomad
-#     tee -a /etc/sysctl.d/bridge.conf <<-EOF
-#     net.bridge.bridge-nf-call-arptables = 1
-#     net.bridge.bridge-nf-call-ip6tables = 1
-#     net.bridge.bridge-nf-call-iptables = 1
-# EOF
-# }
-
 function generate_nomad_config {
   log "INFO" "Generating $NOMAD_CONFIG_PATH file."
+  %{ if nomad_server }
+    # Read the encryption key from the file
+    log "INFO" "Fetching Nomad server private IPs..."
+    NOMAD_SERVERS=$(az vmss nic list --resource-group "$RESOURCE_GROUP" --vmss-name "$VMSS_NAME" \
+  --query "[].ipConfigurations[0].privateIPAddress" -o tsv | awk '{print "\"" $0 "\""}' | paste -sd "," -)
+    NOMAD_SERVERS=$${NOMAD_SERVERS%,}
+  %{ endif }
 
   cat >$NOMAD_CONFIG_PATH <<EOF
 
 # Full configuration options can be found at https://developer.hashicorp.com/nomad/docs/configuration
-
 %{ if nomad_acl_enabled }
 acl {
   enabled = true
@@ -253,11 +285,11 @@ server {
   enabled          = true
 
   bootstrap_expect = "${nomad_nodes}"
-  license_path     = "$NOMAD_DIR_LICENSE/nomad.hclic"
-  encrypt          = "$NOMAD_GOSSIP_ENCRYPTION_KEY_SOURCE"
+  license_path     = "$NOMAD_DIR_LICENSE/license.hclic"
+  encrypt          = "$GOSSIP_ENCRYPTION_KEY"
 
   server_join {
-    retry_join = ["provider=azurem addr_type=private_v4 tag_key=Environment-Name tag_value=${name}"]
+    retry_join = [$NOMAD_SERVERS]
   }
 }
 
@@ -299,7 +331,7 @@ servers = [
 ]
 %{ else }
   server_join {
-    retry_join = ["provider=azure tag_name=${nomad_upstream_tag_key} tag_value=${nomad_upstream_tag_value} tenant_id=${tenant_id} client_id=${client_id} subscription_id=${subscription_id} secret_access_key=${secret_access_key}"]
+    retry_join = [$NOMAD_SERVERS]
   }
 %{ endif }
 }
@@ -369,7 +401,6 @@ function exit_script {
 
 function main {
     log "INFO" "Starting Nomad setup."
-
     OS_DISTRO=$(detect_os_distro)
     log "INFO" "Detected Linux OS distro is '$OS_DISTRO'."
     scrape_vm_info
@@ -382,22 +413,22 @@ function main {
     %{ if nomad_client ~}
     install_runtime
     install_cni_plugins
-    # configure_sysctl
     %{ endif ~}
     %{ if nomad_server ~}
-    %{ if azure_keyvault != false ~}
-    log "INFO" "Grabbing Secrets from vault."
-    retrieve_secret "$NOMAD_LICENSE_SOURCE" ${nomad_license_source} "$NOMAD_DIR_LICENSE/license.hclic"
-    retrieve_secret "$NOMAD_GOSSIP_ENCRYPTION_KEY_SOURCE" ${nomad_gossip_encryption_key_source} "$NOMAD_DIR_CONFIG/gossip.key"
-    %{ endif ~}
+    log "INFO" "Grabbing Secrets from ${nomad_license_secret_id}."
+    retrieve_license "$NOMAD_LICENSE_SECRET_ID" ${nomad_license_secret_id} 
+    log "INFO" "Grabbing Secrets from ${nomad_gossip_encryption_key_secret_id}."
+    retrieve_gossip_key "$NOMAD_GOSSIP_ENCRYPTION_KEY_ID" ${nomad_gossip_encryption_key_secret_id} 
     %{ endif ~}
     %{ if nomad_tls_enabled ~}
     log "INFO" "is ${nomad_tls_enabled} ?."
-    retrieve_secret "$NOMAD_TLS_CERT_SECRET_ID" ${nomad_tls_cert_secret_id} "$NOMAD_DIR_TLS/cert.pem"
-    retrieve_secret "$NOMAD_TLS_PRIVKEY_SECRET_ID" ${nomad_tls_privkey_secret_id} "$NOMAD_DIR_TLS/key.pem"
+    retrieve_secret "$NOMAD_TLS_CERT_SECRET_ID" "$NOMAD_DIR_TLS/cert.pem"
+    retrieve_secret "$NOMAD_TLS_PRIVKEY_SECRET_ID" "$NOMAD_DIR_TLS/key.pem"
     %{ if nomad_tls_ca_bundle_secret_id != "NONE" ~}
-    retrieve_secret "$NOMAD_TLS_CA_BUNDLE_SECRET_ID" ${nomad_tls_ca_bundle_secret_id} "$NOMAD_DIR_TLS/ca.pem"
+    retrieve_secret "$NOMAD_TLS_CA_BUNDLE_SECRET_ID" "$NOMAD_DIR_TLS/bundle.pem"
     %{ endif ~}
+    chown -R $NOMAD_USER:$NOMAD_GROUP $NOMAD_DIR_TLS
+    chmod 640 $NOMAD_DIR_TLS/*pem
     %{ endif ~}
     generate_nomad_config
     configure_systemd
@@ -409,4 +440,3 @@ function main {
 }
 
 main
-

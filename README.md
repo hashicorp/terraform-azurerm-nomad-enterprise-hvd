@@ -137,28 +137,31 @@ Please note that there is no official Service Level Agreement (SLA) for support 
 
 | Name | Type |
 |------|------|
-| [azurerm_dns_a_record.nomad_alias_record](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/dns_a_record) | resource |
-| [azurerm_dns_zone.nomad](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/dns_zone) | resource |
-| [azurerm_key_vault.nomad_keyvault](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/key_vault) | resource |
-| [azurerm_lb.nomad_lb](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/lb) | resource |
+| [azurerm_dns_a_record.nomad](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/dns_a_record) | resource |
+| [azurerm_key_vault_access_policy.nomad_vmss_keyvault_access](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/key_vault_access_policy) | resource |
+| [azurerm_lb.nomad](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/lb) | resource |
 | [azurerm_lb_backend_address_pool.nomad_backend_pool](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/lb_backend_address_pool) | resource |
 | [azurerm_lb_probe.nomad_probe](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/lb_probe) | resource |
-| [azurerm_lb_rule.nomad_lb_rule_4646](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/lb_rule) | resource |
+| [azurerm_lb_rule.nomad_rule_4646](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/lb_rule) | resource |
 | [azurerm_linux_virtual_machine_scale_set.nomad](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/linux_virtual_machine_scale_set) | resource |
-| [azurerm_network_interface.nomad_lb_nic](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/network_interface) | resource |
+| [azurerm_network_interface.nomad_nic](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/network_interface) | resource |
 | [azurerm_network_interface_security_group_association.lb_nsg_association](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/network_interface_security_group_association) | resource |
 | [azurerm_network_security_group.lb_nsg](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/network_security_group) | resource |
 | [azurerm_network_security_group.nomad](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/network_security_group) | resource |
-| [azurerm_public_ip.nomad](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/public_ip) | resource |
+| [azurerm_private_dns_a_record.nomad](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/private_dns_a_record) | resource |
+| [azurerm_private_dns_zone_virtual_network_link.nomad](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/private_dns_zone_virtual_network_link) | resource |
 | [azurerm_public_ip.nomad_frontend_ip](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/public_ip) | resource |
 | [azurerm_resource_group.nomad](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group) | resource |
 | [azurerm_role_assignment.nomad_vm_reader_role](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) | resource |
 | [azurerm_user_assigned_identity.nomad_vm_identity](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/user_assigned_identity) | resource |
 | [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/client_config) | data source |
+| [azurerm_dns_zone.nomad](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/dns_zone) | data source |
 | [azurerm_image.custom](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/image) | data source |
+| [azurerm_key_vault.nomad_keyvault](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/key_vault) | data source |
+| [azurerm_private_dns_zone.nomad](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/private_dns_zone) | data source |
 | [azurerm_resource_group.nomad](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/resource_group) | data source |
 | [azurerm_resource_group.nomad_rg](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/resource_group) | data source |
-| [azurerm_subnet.nomad_subnet](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/subnet) | data source |
+| [azurerm_subnet.lb_subnet](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/subnet) | data source |
 | [azurerm_subscription.primary](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/subscription) | data source |
 
 ## Inputs
@@ -171,46 +174,52 @@ Please note that there is no official Service Level Agreement (SLA) for support 
 | <a name="input_nomad_datacenter"></a> [nomad\_datacenter](#input\_nomad\_datacenter) | Specifies the data center of the local agent. | `string` | n/a | yes |
 | <a name="input_nomad_server"></a> [nomad\_server](#input\_nomad\_server) | Enable the Nomad server agent. | `bool` | n/a | yes |
 | <a name="input_resource_group_name"></a> [resource\_group\_name](#input\_resource\_group\_name) | Name of Azure resource group to create or name of existing resource group to use (if `create_resource_group` is `false`). | `string` | n/a | yes |
-| <a name="input_ssh_key_name"></a> [ssh\_key\_name](#input\_ssh\_key\_name) | Name of the SSH key for VM access, already registered in Azure. | `string` | n/a | yes |
 | <a name="input_subnet_id"></a> [subnet\_id](#input\_subnet\_id) | Azure subnet ID for Nomad instance network interface. | `string` | n/a | yes |
 | <a name="input_vnet_id"></a> [vnet\_id](#input\_vnet\_id) | ID of the Azure VNet where resources are deployed. | `string` | n/a | yes |
+| <a name="input_vnet_name"></a> [vnet\_name](#input\_vnet\_name) | Name of the Azure VNet where resources are deployed. | `string` | n/a | yes |
 | <a name="input_additional_package_names"></a> [additional\_package\_names](#input\_additional\_package\_names) | List of additional repository package names to install on the VMs | `set(string)` | `[]` | no |
-| <a name="input_admin_password"></a> [admin\_password](#input\_admin\_password) | Admin password for VM instance. | `string` | `"testPassword1234!"` | no |
 | <a name="input_admin_username"></a> [admin\_username](#input\_admin\_username) | Admin username for VM instance. | `string` | `"ubuntu"` | no |
 | <a name="input_associate_public_ip"></a> [associate\_public\_ip](#input\_associate\_public\_ip) | Whether to associate public IPs with the Nomad cluster VMs. | `bool` | `false` | no |
 | <a name="input_autopilot_health_enabled"></a> [autopilot\_health\_enabled](#input\_autopilot\_health\_enabled) | Perform autopilot health checks on Nomad server nodes at boot. | `bool` | `true` | no |
+| <a name="input_availability_zones"></a> [availability\_zones](#input\_availability\_zones) | List of Azure Availability Zones to spread nomad resources across. | `set(string)` | <pre>[<br/>  "1",<br/>  "2",<br/>  "3"<br/>]</pre> | no |
 | <a name="input_cidr_allow_ingress_nomad"></a> [cidr\_allow\_ingress\_nomad](#input\_cidr\_allow\_ingress\_nomad) | CIDR ranges allowed ingress on port 443/80 for Nomad server/load balancer. | `list(string)` | <pre>[<br/>  "0.0.0.0/0"<br/>]</pre> | no |
 | <a name="input_cni_version"></a> [cni\_version](#input\_cni\_version) | Version of CNI plugin to install. | `string` | `"1.6.0"` | no |
 | <a name="input_common_tags"></a> [common\_tags](#input\_common\_tags) | Map of common tags for taggable Azure resources. | `map(string)` | `{}` | no |
-| <a name="input_create_dns_nomad_record"></a> [create\_dns\_nomad\_record](#input\_create\_dns\_nomad\_record) | Boolean to create DNS A Record for Nomad in Azure DNS. | `bool` | `false` | no |
 | <a name="input_create_load_balancer"></a> [create\_load\_balancer](#input\_create\_load\_balancer) | Boolean to create an Azure Load Balancer for Nomad. | `bool` | `true` | no |
+| <a name="input_create_nomad_private_dns_record"></a> [create\_nomad\_private\_dns\_record](#input\_create\_nomad\_private\_dns\_record) | Boolean to create a DNS record for nomad in a private Azure DNS zone. `private_dns_zone_name` must also be provided when `true`. | `bool` | `false` | no |
+| <a name="input_create_nomad_public_dns_record"></a> [create\_nomad\_public\_dns\_record](#input\_create\_nomad\_public\_dns\_record) | Boolean to create a DNS record for nomad in a public Azure DNS zone. `public_dns_zone_name` must also be provided when `true`. | `bool` | `false` | no |
 | <a name="input_create_resource_group"></a> [create\_resource\_group](#input\_create\_resource\_group) | Boolean to create a new Azure resource group for this deployment. Set to `false` if you want to use an existing resource group. | `bool` | `false` | no |
 | <a name="input_disk_size_gb"></a> [disk\_size\_gb](#input\_disk\_size\_gb) | Size of OS disk for Nomad VMs in GB. | `number` | `50` | no |
 | <a name="input_disk_type"></a> [disk\_type](#input\_disk\_type) | Disk type for Nomad VMs. Options: `Standard_LRS`, `Premium_LRS`, etc. | `string` | `"Standard_LRS"` | no |
 | <a name="input_frontend_ip_config_name"></a> [frontend\_ip\_config\_name](#input\_frontend\_ip\_config\_name) | The name of the frontend IP configuration to which the rule is associated. | `string` | `"PublicIPAddress"` | no |
-| <a name="input_instance_count"></a> [instance\_count](#input\_instance\_count) | Instance count for Azure Scale Set. | `number` | `2` | no |
 | <a name="input_lb_is_internal"></a> [lb\_is\_internal](#input\_lb\_is\_internal) | Create an internal (private) Azure Load Balancer. | `bool` | `true` | no |
+| <a name="input_lb_private_ip"></a> [lb\_private\_ip](#input\_lb\_private\_ip) | Private IP address for internal Azure Load Balancer. Only valid when `lb_is_internal` is `true`. | `string` | `null` | no |
+| <a name="input_lb_subnet_name"></a> [lb\_subnet\_name](#input\_lb\_subnet\_name) | Name of the Azure lb subnet where the lb resources should be deployed too. | `string` | `null` | no |
 | <a name="input_nomad_acl_enabled"></a> [nomad\_acl\_enabled](#input\_nomad\_acl\_enabled) | Enable ACLs for Nomad. | `bool` | `true` | no |
 | <a name="input_nomad_architecture"></a> [nomad\_architecture](#input\_nomad\_architecture) | Architecture of the Nomad binary to install. | `string` | `"amd64"` | no |
-| <a name="input_nomad_dns_zone_name"></a> [nomad\_dns\_zone\_name](#input\_nomad\_dns\_zone\_name) | Azure DNS zone name to create the Nomad A record. | `string` | `null` | no |
 | <a name="input_nomad_fqdn"></a> [nomad\_fqdn](#input\_nomad\_fqdn) | Fully qualified domain name of the Nomad Cluster. This name should resolve to the load balancer IP address. | `string` | `null` | no |
 | <a name="input_nomad_gossip_encryption_key_secret_id"></a> [nomad\_gossip\_encryption\_key\_secret\_id](#input\_nomad\_gossip\_encryption\_key\_secret\_id) | ID of Azure Key Vault secret for Nomad gossip encryption key. | `string` | `null` | no |
+| <a name="input_nomad_key_vault_name"></a> [nomad\_key\_vault\_name](#input\_nomad\_key\_vault\_name) | ID of Azure Key Vault secret for Nomad license file. | `string` | `null` | no |
 | <a name="input_nomad_license_secret_id"></a> [nomad\_license\_secret\_id](#input\_nomad\_license\_secret\_id) | ID of Azure Key Vault secret for Nomad license file. | `string` | `null` | no |
 | <a name="input_nomad_location"></a> [nomad\_location](#input\_nomad\_location) | Specifies the region of the local agent. Defaults to the Azure region if null. | `string` | `null` | no |
-| <a name="input_nomad_nodes"></a> [nomad\_nodes](#input\_nomad\_nodes) | Number of Nomad nodes to deploy. | `number` | `6` | no |
+| <a name="input_nomad_nodes"></a> [nomad\_nodes](#input\_nomad\_nodes) | Number of Nomad nodes to deploy. | `number` | `2` | no |
 | <a name="input_nomad_tls_ca_bundle_secret_id"></a> [nomad\_tls\_ca\_bundle\_secret\_id](#input\_nomad\_tls\_ca\_bundle\_secret\_id) | ID of Azure Key Vault secret for private/custom TLS Certificate Authority (CA) bundle in PEM format. Secret must be stored as a base64-encoded string. | `string` | `null` | no |
 | <a name="input_nomad_tls_cert_secret_id"></a> [nomad\_tls\_cert\_secret\_id](#input\_nomad\_tls\_cert\_secret\_id) | ID of Azure Key Vault secret for Nomad TLS certificate in PEM format. Secret must be stored as a base64-encoded string. | `string` | `null` | no |
 | <a name="input_nomad_tls_enabled"></a> [nomad\_tls\_enabled](#input\_nomad\_tls\_enabled) | Enable TLS for Nomad. | `bool` | `true` | no |
 | <a name="input_nomad_tls_privkey_secret_id"></a> [nomad\_tls\_privkey\_secret\_id](#input\_nomad\_tls\_privkey\_secret\_id) | ID of Azure Key Vault secret for Nomad TLS private key in PEM format. Secret must be stored as a base64-encoded string. | `string` | `null` | no |
 | <a name="input_nomad_ui_enabled"></a> [nomad\_ui\_enabled](#input\_nomad\_ui\_enabled) | Enable the Nomad UI. | `bool` | `true` | no |
 | <a name="input_nomad_upstream_servers"></a> [nomad\_upstream\_servers](#input\_nomad\_upstream\_servers) | List of Nomad server addresses to join the Nomad client with. | `list(string)` | `null` | no |
-| <a name="input_nomad_upstream_tag_key"></a> [nomad\_upstream\_tag\_key](#input\_nomad\_upstream\_tag\_key) | String of the tag key the Nomad client should look for in AWS to join with. Only needed for auto-joining the Nomad client. | `string` | `null` | no |
-| <a name="input_nomad_upstream_tag_value"></a> [nomad\_upstream\_tag\_value](#input\_nomad\_upstream\_tag\_value) | String of the tag value the Nomad client should look for in AWS to join with. Only needed for auto-joining the Nomad client. | `string` | `null` | no |
+| <a name="input_nomad_upstream_tag_key"></a> [nomad\_upstream\_tag\_key](#input\_nomad\_upstream\_tag\_key) | String of the tag key the Nomad client should look for in Azure to join with. Only needed for auto-joining the Nomad client. | `string` | `null` | no |
+| <a name="input_nomad_upstream_tag_value"></a> [nomad\_upstream\_tag\_value](#input\_nomad\_upstream\_tag\_value) | String of the tag value the Nomad client should look for in Azure to join with. Only needed for auto-joining the Nomad client. | `string` | `null` | no |
 | <a name="input_nomad_version"></a> [nomad\_version](#input\_nomad\_version) | Version of Nomad to install. | `string` | `"1.9.0+ent"` | no |
 | <a name="input_permit_all_egress"></a> [permit\_all\_egress](#input\_permit\_all\_egress) | Allow unrestricted egress on cluster nodes. Additional rules may be required if disabled. | `bool` | `true` | no |
-| <a name="input_ssh_public_key"></a> [ssh\_public\_key](#input\_ssh\_public\_key) | SSH public key for bastion VM instance. | `string` | `null` | no |
+| <a name="input_private_dns_zone_name"></a> [private\_dns\_zone\_name](#input\_private\_dns\_zone\_name) | Name of existing private Azure DNS zone to create DNS record in. Required when `create_nomad_private_dns_record` is `true`. | `string` | `null` | no |
+| <a name="input_private_dns_zone_rg"></a> [private\_dns\_zone\_rg](#input\_private\_dns\_zone\_rg) | Name of Resource Group where `private_dns_zone_name` resides. Required when `create_nomad_private_dns_record` is `true`. | `string` | `null` | no |
+| <a name="input_public_dns_zone_name"></a> [public\_dns\_zone\_name](#input\_public\_dns\_zone\_name) | Name of existing public Azure DNS zone to create DNS record in. Required when `create_nomad_public_dns_record` is `true`. | `string` | `null` | no |
+| <a name="input_public_dns_zone_rg"></a> [public\_dns\_zone\_rg](#input\_public\_dns\_zone\_rg) | Name of Resource Group where `public_dns_zone_name` resides. Required when `create_nomad_public_dns_record` is `true`. | `string` | `null` | no |
 | <a name="input_vm_custom_image_name"></a> [vm\_custom\_image\_name](#input\_vm\_custom\_image\_name) | Name of custom VM image to use for VMSS. If not using a custom image, leave this set to null. | `string` | `null` | no |
 | <a name="input_vm_custom_image_rg_name"></a> [vm\_custom\_image\_rg\_name](#input\_vm\_custom\_image\_rg\_name) | Resource Group name where the custom VM image resides. Only valid if `vm_custom_image_name` is not null. | `string` | `null` | no |
+| <a name="input_vm_enable_boot_diagnostics"></a> [vm\_enable\_boot\_diagnostics](#input\_vm\_enable\_boot\_diagnostics) | Boolean to enable boot diagnostics for VMSS. | `bool` | `true` | no |
 | <a name="input_vm_image_offer"></a> [vm\_image\_offer](#input\_vm\_image\_offer) | Offer of the VM image. | `string` | `"0001-com-ubuntu-server-jammy"` | no |
 | <a name="input_vm_image_publisher"></a> [vm\_image\_publisher](#input\_vm\_image\_publisher) | Publisher of the VM image. | `string` | `"Canonical"` | no |
 | <a name="input_vm_image_sku"></a> [vm\_image\_sku](#input\_vm\_image\_sku) | SKU of the VM image. | `string` | `"22_04-lts-gen2"` | no |
@@ -218,6 +227,7 @@ Please note that there is no official Service Level Agreement (SLA) for support 
 | <a name="input_vm_os_distro"></a> [vm\_os\_distro](#input\_vm\_os\_distro) | OS distribution type for the Nomad VM. Choose from `Ubuntu`, `RHEL`, or `CentOS`. | `string` | `"Ubuntu"` | no |
 | <a name="input_vm_size"></a> [vm\_size](#input\_vm\_size) | Azure VM size for Nomad VMs. | `string` | `"Standard_D2s_v3"` | no |
 | <a name="input_vm_sku"></a> [vm\_sku](#input\_vm\_sku) | SKU for VM size for the VMSS. | `string` | `"Standard_D2s_v5"` | no |
+| <a name="input_vm_ssh_public_key"></a> [vm\_ssh\_public\_key](#input\_vm\_ssh\_public\_key) | SSH public key for VMs in VMSS. | `string` | `null` | no |
 
 ## Outputs
 

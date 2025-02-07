@@ -35,6 +35,17 @@ variable "location" {
   }
 }
 
+variable "availability_zones" {
+  type        = set(string)
+  description = "List of Azure Availability Zones to spread nomad resources across."
+  default     = ["1", "2", "3"]
+
+  validation {
+    condition     = alltrue([for az in var.availability_zones : contains(["1", "2", "3"], az)])
+    error_message = "Availability zone must be one of, or a combination of '1', '2', '3'."
+  }
+}
+
 variable "common_tags" {
   type        = map(string)
   description = "Map of common tags for taggable Azure resources."
@@ -44,6 +55,11 @@ variable "common_tags" {
 #------------------------------------------------------------------------------
 # Prerequisites
 #------------------------------------------------------------------------------
+variable "nomad_key_vault_name" {
+  type        = string
+  description = "ID of Azure Key Vault secret for Nomad license file."
+  default     = null
+}
 variable "nomad_license_secret_id" {
   type        = string
   description = "ID of Azure Key Vault secret for Nomad license file."
@@ -192,6 +208,21 @@ variable "subnet_id" {
   description = "Azure subnet ID for Nomad instance network interface."
 }
 
+variable "vnet_name" {
+  type        = string
+  description = "Name of the Azure VNet where resources are deployed."
+}
+
+variable "lb_subnet_name" {
+  type        = string
+  description = "Name of the Azure lb subnet where the lb resources should be deployed too."
+  default     = null
+  validation {
+    condition     = var.create_load_balancer ? var.lb_subnet_name != null : true
+    error_message = "lb_subnet_name must be provided when create_load_balancer is true."
+  }
+}
+
 variable "associate_public_ip" {
   type        = bool
   description = "Whether to associate public IPs with the Nomad cluster VMs."
@@ -222,21 +253,58 @@ variable "lb_is_internal" {
   default     = true
 }
 
+variable "lb_private_ip" {
+  type        = string
+  description = "Private IP address for internal Azure Load Balancer. Only valid when `lb_is_internal` is `true`."
+  default     = null
+  validation {
+    condition     = var.lb_is_internal ? var.lb_private_ip != null : true
+    error_message = "Private IP address must be provided when `lb_is_internal` is `true`."
+  }
+}
+
 variable "frontend_ip_config_name" {
   type        = string
   description = "The name of the frontend IP configuration to which the rule is associated."
   default     = "PublicIPAddress"
 }
 
-variable "create_dns_nomad_record" {
+#------------------------------------------------------------------------------
+# DNS
+#------------------------------------------------------------------------------
+variable "create_nomad_public_dns_record" {
   type        = bool
-  description = "Boolean to create DNS A Record for Nomad in Azure DNS."
+  description = "Boolean to create a DNS record for nomad in a public Azure DNS zone. `public_dns_zone_name` must also be provided when `true`."
   default     = false
 }
 
-variable "nomad_dns_zone_name" {
+variable "create_nomad_private_dns_record" {
+  type        = bool
+  description = "Boolean to create a DNS record for nomad in a private Azure DNS zone. `private_dns_zone_name` must also be provided when `true`."
+  default     = false
+}
+
+variable "public_dns_zone_name" {
   type        = string
-  description = "Azure DNS zone name to create the Nomad A record."
+  description = "Name of existing public Azure DNS zone to create DNS record in. Required when `create_nomad_public_dns_record` is `true`."
+  default     = null
+}
+
+variable "public_dns_zone_rg" {
+  type        = string
+  description = "Name of Resource Group where `public_dns_zone_name` resides. Required when `create_nomad_public_dns_record` is `true`."
+  default     = null
+}
+
+variable "private_dns_zone_name" {
+  type        = string
+  description = "Name of existing private Azure DNS zone to create DNS record in. Required when `create_nomad_private_dns_record` is `true`."
+  default     = null
+}
+
+variable "private_dns_zone_rg" {
+  type        = string
+  description = "Name of Resource Group where `private_dns_zone_name` resides. Required when `create_nomad_private_dns_record` is `true`."
   default     = null
 }
 
@@ -301,12 +369,6 @@ variable "vm_size" {
   default     = "Standard_D2s_v3"
 }
 
-variable "instance_count" {
-  type        = number
-  description = "Instance count for Azure Scale Set."
-  default     = 2
-}
-
 variable "vm_image_version" {
   type        = string
   description = "Version of the VM image."
@@ -316,7 +378,7 @@ variable "vm_image_version" {
 variable "nomad_nodes" {
   type        = number
   description = "Number of Nomad nodes to deploy."
-  default     = 6
+  default     = 2
 }
 
 variable "disk_size_gb" {
@@ -331,9 +393,10 @@ variable "disk_type" {
   default     = "Standard_LRS"
 }
 
-variable "ssh_key_name" {
+variable "vm_ssh_public_key" {
   type        = string
-  description = "Name of the SSH key for VM access, already registered in Azure."
+  description = "SSH public key for VMs in VMSS."
+  default     = null
 }
 
 variable "admin_username" {
@@ -342,14 +405,8 @@ variable "admin_username" {
   default     = "ubuntu"
 }
 
-variable "admin_password" {
-  type        = string
-  description = "Admin password for VM instance."
-  default     = "testPassword1234!"
-}
-
-variable "ssh_public_key" {
-  type        = string
-  description = "SSH public key for bastion VM instance."
-  default     = null
+variable "vm_enable_boot_diagnostics" {
+  type        = bool
+  description = "Boolean to enable boot diagnostics for VMSS."
+  default     = true
 }
