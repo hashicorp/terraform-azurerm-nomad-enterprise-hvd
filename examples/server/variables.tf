@@ -114,24 +114,6 @@ variable "nomad_ui_enabled" {
   default     = true
 }
 
-variable "nomad_upstream_servers" {
-  type        = list(string)
-  description = "List of Nomad server addresses to join the Nomad client with."
-  default     = null
-}
-
-variable "nomad_upstream_tag_key" {
-  type        = string
-  description = "String of the tag key the Nomad client should look for in Azure to join with. Only needed for auto-joining the Nomad client."
-  default     = null
-}
-
-variable "nomad_upstream_tag_value" {
-  type        = string
-  description = "String of the tag value the Nomad client should look for in Azure to join with. Only needed for auto-joining the Nomad client."
-  default     = null
-}
-
 variable "nomad_tls_enabled" {
   type        = bool
   description = "Boolean to enable TLS for Nomad."

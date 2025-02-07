@@ -33,7 +33,6 @@ nomad_server              = true
 nomad_region              = "<east-us>"
 nomad_datacenter          = "<dc1>"
 nomad_ui_enabled          = true
-nomad_upstream_servers    = ["10.0.0.1", "10.0.0.2"]
 nomad_upstream_tag_key    = "NomadServer"
 nomad_upstream_tag_value  = "active"
 nomad_tls_enabled         = true
