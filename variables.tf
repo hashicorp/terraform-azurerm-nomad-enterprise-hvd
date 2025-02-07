@@ -408,5 +408,5 @@ variable "admin_username" {
 variable "vm_enable_boot_diagnostics" {
   type        = bool
   description = "Boolean to enable boot diagnostics for VMSS."
-  default     = false
+  default     = true
 }

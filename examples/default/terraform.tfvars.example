@@ -46,35 +46,27 @@ nomad_fqdn                = "<nomad.mycompany.com>"
 #------------------------------------------------------------------------------
 # Networking
 #------------------------------------------------------------------------------
-vnet_id                                = "/subscriptions/<subscription_id>/resourceGroups/<resource_group>/providers/Microsoft.Network/virtualNetworks/<vnet_name>"
-instance_subnets                      = ["/subscriptions/<subscription_id>/resourceGroups/<resource_group>/providers/Microsoft.Network/virtualNetworks/<vnet_name>/subnets/<subnet_name>"]
-subnet_id                             = "/subscriptions/<subscription_id>/resourceGroups/<resource_group>/providers/Microsoft.Network/virtualNetworks/<vnet_name>/subnets/<subnet_name>"
+vnet_id                               = "</subscriptions/<subscription_id>/resourceGroups/<resource_group>/providers/Microsoft.Network/virtualNetworks/<vnet_name>"
+subnet_id                             = "</subscriptions/<subscription_id>/resourceGroups/<resource_group>/providers/Microsoft.Network/virtualNetworks/<vnet_name>/subnets/<subnet_name>"
+lb_subnet_name                        = "<lb-subnet-name>"
 vnet_name                             = <vnet_name>
 subnet_id                             = <subnet_name>
 associate_public_ip                   = false
-frontend_ip_config_name               = "<frontend-ip-example>"
-allowed_ingress_cidr                  = ["0.0.0.0/0"]
-allow_all_outbound                    = true
-additional_network_security_group_ids = []
+cidr_allow_ingress_nomad              = ["0.0.0.0/0"]
 create_load_balancer                  = true
 lb_is_internal                        = true
-lb_subnet_ids                         = ["/subscriptions/<subscription_id>/resourceGroups/<resource_group>/providers/Microsoft.Network/virtualNetworks/<vnet_name>/subnets/<subnet_name>"]
-create_dns_zone                       = true
-dns_zone_name                         = "<mycompany.com>"
+
+#------------------------------------------------------------------------------
+# DNS
+#------------------------------------------------------------------------------
+create_nomad_private_dns_record = <true>
+private_dns_zone_name           = "<azure.example.com>"
+private_dns_zone_rg_name        = "<private-dns-zone-resource-group-name>"
 
 #------------------------------------------------------------------------------
 # Compute
 #------------------------------------------------------------------------------
-vm_os_image                = "UbuntuLTS"
-vm_image_id                = null
+vm_ssh_public_key          = "<ssh-rsa mytfevmsshpublickey== user@user-abcdef123456>"
 vm_size                    = "Standard_DS2_v2"
 nomad_nodes                = 6
-health_probe_grace_period  = 600
-enable_disk_encryption     = true
-disk_encryption_key_vault_id = "/subscriptions/<subscription_id>/resourceGroups/<resource_group>/providers/Microsoft.KeyVault/vaults/nomad-key"
-os_disk_size_gb            = 50
-os_disk_type               = "Premium_LRS"
-data_disk_size_gb          = 50
-data_disk_type             = "Premium_LRS"
-ssh_key_name               = "<my-ssh-key>"
-enable_azure_monitor       = true
+
