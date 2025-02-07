@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: MPL-2.0
 
 #------------------------------------------------------------------------------
-# DNS Zone lookup
+# DNS zone lookup
 #------------------------------------------------------------------------------
 data "azurerm_dns_zone" "nomad" {
   count = var.create_nomad_public_dns_record == true && var.public_dns_zone_name != null ? 1 : 0
