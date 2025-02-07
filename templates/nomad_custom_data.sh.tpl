@@ -289,7 +289,7 @@ server {
   encrypt          = "${GOSSIP_ENCRYPTION_KEY}"
 
   server_join {
-    retry_join = [$NOMAD_SERVERS]
+    retry_join = [${NOMAD_SERVERS}]
   }
 }
 
@@ -310,10 +310,10 @@ autopilot {
 tls {
   http      = true
   rpc       = true
-  cert_file = "$NOMAD_DIR_TLS/cert.pem" 
-  key_file  = "$NOMAD_DIR_TLS/key.pem"
+  cert_file = "${NOMAD_DIR_TLS}/cert.pem" 
+  key_file  = "${NOMAD_DIR_TLS}/key.pem"
 %{ if nomad_tls_ca_bundle_secret_id != "NONE" ~}
-  ca_file   = "$NOMAD_DIR_TLS/bundle.pem"
+  ca_file   = "${NOMAD_DIR_TLS}/bundle.pem"
 %{ endif ~}
   verify_server_hostname = true
   verify_https_client    = false
@@ -331,7 +331,7 @@ servers = [
 ]
 %{ else }
   server_join {
-    retry_join = [$NOMAD_SERVERS]
+    retry_join = [${NOMAD_SERVERS}]
   }
 %{ endif }
 }
@@ -350,8 +350,8 @@ ui {
 }
 EOF
 
-  chown $NOMAD_USER:$NOMAD_GROUP $NOMAD_CONFIG_PATH
-  chmod 640 $NOMAD_CONFIG_PATH
+  chown ${NOMAD_USER}:${NOMAD_GROUP} ${NOMAD_CONFIG_PATH}
+  chmod 640 ${NOMAD_CONFIG_PATH}
 }
 
 function configure_systemd {
