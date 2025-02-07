@@ -1,0 +1,71 @@
+#------------------------------------------------------------------------------
+# Provider
+#------------------------------------------------------------------------------
+location = "<eastus>"
+
+#------------------------------------------------------------------------------
+# Common
+#------------------------------------------------------------------------------
+friendly_name_prefix = "<nomad-cluster>"
+common_tags = {
+  Environment = "<production>"
+  Project     = "<nomad-deployment-example>"
+}
+
+#------------------------------------------------------------------------------
+# Prereqs
+#------------------------------------------------------------------------------
+nomad_key_vault_name                  = "<your-key-vault>"
+nomad_license_secret_id               = "<https://my-key-vault.vault.azure.net/secrets/nomad-license>"
+nomad_gossip_encryption_key_secret_id = "<https://my-key-vault.vault.azure.net/secrets/gossip-key>"
+nomad_tls_cert_secret_id              = "<https://my-key-vault.vault.azure.net/secrets/nomad-tls-cert>"
+nomad_tls_privkey_secret_id           = "<https://my-key-vault.vault.azure.net/secrets/nomad-tls-privkey>"
+nomad_tls_ca_bundle_secret_id         = "<https://my-key-vault.vault.azure.net/secrets/nomad-tls-ca-bundle>"
+additional_package_names              = ["htop", "curl", "jq"]
+resource_group_name                   = "<nomad-example>"
+
+#------------------------------------------------------------------------------
+# Nomad Configuration Settings
+#------------------------------------------------------------------------------
+nomad_acl_enabled         = true
+nomad_client              = true
+nomad_server              = true
+nomad_region              = "<east-us>"
+nomad_datacenter          = "dc1"
+nomad_ui_enabled          = true
+nomad_upstream_servers    = [<"10.0.0.1", "10.0.0.2">]
+nomad_upstream_tag_key    = "NomadServer"
+nomad_upstream_tag_value  = "active"
+nomad_tls_enabled         = true
+autopilot_health_enabled  = true
+nomad_version             = "1.9.0+ent"
+cni_version               = "1.6.0"
+nomad_architecture        = "amd64"
+nomad_fqdn                = "<nomad.mycompany.com>"
+
+#------------------------------------------------------------------------------
+# Networking
+#------------------------------------------------------------------------------
+vnet_id                               = "</subscriptions/<subscription_id>/resourceGroups/<resource_group>/providers/Microsoft.Network/virtualNetworks/<vnet_name>"
+subnet_id                             = "</subscriptions/<subscription_id>/resourceGroups/<resource_group>/providers/Microsoft.Network/virtualNetworks/<vnet_name>/subnets/<subnet_name>"
+lb_subnet_name                        = "<lb-subnet-name>"
+vnet_name                             = <vnet_name>
+subnet_id                             = <subnet_name>
+associate_public_ip                   = false
+cidr_allow_ingress_nomad              = ["<10.0.0.0/16>"]
+create_load_balancer                  = true
+lb_is_internal                        = true
+
+#------------------------------------------------------------------------------
+# DNS
+#------------------------------------------------------------------------------
+create_nomad_private_dns_record = <true>
+private_dns_zone_name           = "<azure.example.com>"
+private_dns_zone_rg_name        = "<private-dns-zone-resource-group-name>"
+
+#------------------------------------------------------------------------------
+# Compute
+#------------------------------------------------------------------------------
+vm_ssh_public_key          = "<ssh-rsa mytfevmsshpublickey== user@user-abcdef123456>"
+vm_size                    = "Standard_D8s_v5"
+nomad_nodes                = 6
