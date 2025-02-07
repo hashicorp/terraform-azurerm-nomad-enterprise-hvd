@@ -52,7 +52,7 @@ vnet_name                             = <vnet_name>
 subnet_id                             = <subnet_name>
 associate_public_ip                   = false
 frontend_ip_config_name               = "<frontend-ip-example>"
-allowed_ingress_cidr                  = ["<0.0.0.0/0>"]
+allowed_ingress_cidr                  = ["<10.0.0.0/16>"]
 allow_all_outbound                    = true
 additional_network_security_group_ids = []
 create_load_balancer                  = true
@@ -66,7 +66,7 @@ dns_zone_name                         = "<mycompany.com>"
 #------------------------------------------------------------------------------
 vm_os_image                = "UbuntuLTS"
 vm_image_id                = null
-vm_size                    = "Standard_DS2_v2"
+vm_size                    = "Standard_D8s_v5"
 nomad_nodes                = 6
 health_probe_grace_period  = 600
 enable_disk_encryption     = true

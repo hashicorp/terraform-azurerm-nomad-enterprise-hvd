@@ -52,7 +52,7 @@ lb_subnet_name                        = "<lb-subnet-name>"
 vnet_name                             = <vnet_name>
 subnet_id                             = <subnet_name>
 associate_public_ip                   = false
-cidr_allow_ingress_nomad              = ["0.0.0.0/0"]
+cidr_allow_ingress_nomad              = ["<10.0.0.0/16>"]
 create_load_balancer                  = true
 lb_is_internal                        = true
 
@@ -67,6 +67,5 @@ private_dns_zone_rg_name        = "<private-dns-zone-resource-group-name>"
 # Compute
 #------------------------------------------------------------------------------
 vm_ssh_public_key          = "<ssh-rsa mytfevmsshpublickey== user@user-abcdef123456>"
-vm_size                    = "Standard_DS2_v2"
+vm_size                    = "Standard_D8s_v5"
 nomad_nodes                = 6
-
