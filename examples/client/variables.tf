@@ -176,7 +176,6 @@ variable "associate_public_ip" {
 variable "allowed_ingress_cidr" {
   type        = list(string)
   description = "List of CIDR ranges to allow ingress traffic on port 443 or 80 to Nomad server or load balancer."
-  default     = ["0.0.0.0/0"]
 }
 
 variable "allow_all_outbound" {
