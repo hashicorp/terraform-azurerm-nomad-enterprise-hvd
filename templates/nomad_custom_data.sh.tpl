@@ -286,7 +286,7 @@ server {
 
   bootstrap_expect = "${nomad_nodes}"
   license_path     = "$NOMAD_DIR_LICENSE/license.hclic"
-  encrypt          = "$GOSSIP_ENCRYPTION_KEY"
+  encrypt          = "${GOSSIP_ENCRYPTION_KEY}"
 
   server_join {
     retry_join = [$NOMAD_SERVERS]
