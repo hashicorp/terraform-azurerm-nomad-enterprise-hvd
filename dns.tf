@@ -22,6 +22,7 @@ resource "azurerm_dns_a_record" "nomad_alias_record" {
   resource_group_name = var.resource_group_name
   ttl                 = 300
   records             = [azurerm_lb.nomad_lb.frontend_ip_configuration[0].private_ip_address]
+  target_resource_id  = azurerm_lb.nomad_lb.frontend_ip_configuration[0].public_ip_address_id
 
   tags = merge({ "Name" = "${var.friendly_name_prefix}-nomad-alias-record" }, var.common_tags)
 }

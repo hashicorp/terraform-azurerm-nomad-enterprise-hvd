@@ -62,7 +62,7 @@ resource "azurerm_linux_virtual_machine_scale_set" "nomad" {
   resource_group_name = var.resource_group_name
   location            = var.location
   sku                 = var.vm_size
-  instances           = var.instance_count
+  instances           = var.nomad_nodes
   admin_username      = var.admin_username
   admin_password      = "testPassword1234!"
   disable_password_authentication = false

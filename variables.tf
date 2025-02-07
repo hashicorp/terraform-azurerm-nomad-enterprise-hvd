@@ -316,12 +316,6 @@ variable "vm_size" {
   default     = "Standard_D2s_v3"
 }
 
-variable "instance_count" {
-  type        = number
-  description = "Instance count for Azure Scale Set."
-  default     = 2
-}
-
 variable "vm_image_version" {
   type        = string
   description = "Version of the VM image."

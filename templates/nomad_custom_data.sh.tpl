@@ -169,8 +169,7 @@ function retrieve_secret {
     fi
 
     log "INFO" "Retrieving secret $secret_id for $destination."
-    az keyvault secret show --id "$secret_id" --query value -o tsv > "$destination"
-    chmod 600 "$destination"
+    az keyvault secret show --id "$secret_id" --query value -o tsv | base64 -d > "$destination"
 }
 
 function retrieve_license {
@@ -214,6 +213,7 @@ function create_directories {
         "$NOMAD_DIR_CONFIG"
         "$NOMAD_DIR_TLS"
         "$NOMAD_DIR_DATA"
+        "$NOMAD_DIR_ALLOC_MOUNTS"
         "$NOMAD_DIR_LICENSE"
         "$NOMAD_DIR_LOGS"
         "$NOMAD_DIR_BIN"
@@ -421,11 +421,12 @@ function main {
     %{ endif ~}
     %{ if nomad_tls_enabled ~}
     log "INFO" "is ${nomad_tls_enabled} ?."
-    retrieve_secret "$NOMAD_TLS_CERT_SECRET_ID" ${nomad_tls_cert_secret_id} "$NOMAD_DIR_TLS/cert.pem"
-    retrieve_secret "$NOMAD_TLS_PRIVKEY_SECRET_ID" ${nomad_tls_privkey_secret_id} "$NOMAD_DIR_TLS/key.pem"
+    retrieve_secret "$NOMAD_TLS_CERT_SECRET_ID" "$NOMAD_DIR_TLS/cert.pem"
+    retrieve_secret "$NOMAD_TLS_PRIVKEY_SECRET_ID" "$NOMAD_DIR_TLS/key.pem"
     %{ if nomad_tls_ca_bundle_secret_id != "NONE" ~}
-    retrieve_secret "$NOMAD_TLS_CA_BUNDLE_SECRET_ID" ${nomad_tls_ca_bundle_secret_id} "$NOMAD_DIR_TLS/ca.pem"
+    retrieve_secret "$NOMAD_TLS_CA_BUNDLE_SECRET_ID" "$NOMAD_DIR_TLS/bundle.pem"
     %{ endif ~}
+    chmod 640 $NOMAD_DIR_TLS/*pem
     %{ endif ~}
     generate_nomad_config
     configure_systemd
