@@ -4,8 +4,8 @@ One of the prerequisites for automating Nomad deployment is to store base64-enco
 
 ## Secrets
 
-| Certificate file    | Azure Key Vault secret          |
-|---------------------|----------------------------------|
+| Certificate file      | Azure Key Vault secret          |
+|-----------------------|---------------------------------|
 | Nomad TLS certificate | `nomad-tls-cert-secret`         |
 | Nomad TLS private key | `nomad-tls-privkey-secret`      |
 
