@@ -4,7 +4,7 @@ set -euo pipefail
 LOGFILE="/var/log/nomad-cloud-init.log"
 SYSTEMD_DIR="/etc/systemd/system"
 NOMAD_DIR_CONFIG="/etc/nomad.d"
-NOMAD_CONFIG_PATH="$NOMAD_DIR_CONFIG/nomad.hcl"
+NOMAD_CONFIG_PATH="${NOMAD_DIR_CONFIG}/nomad.hcl"
 NOMAD_DIR_TLS="/etc/nomad.d/tls"
 NOMAD_DIR_DATA="/opt/nomad/data"
 NOMAD_DIR_LICENSE="/opt/nomad/license"
