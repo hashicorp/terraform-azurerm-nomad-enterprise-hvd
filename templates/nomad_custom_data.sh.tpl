@@ -49,7 +49,7 @@ function detect_os_distro {
     local OS_DISTRO_NAME=$(grep "^NAME=" /etc/os-release | cut -d'"' -f2)
     local OS_DISTRO_DETECTED
 
-    case "$OS_DISTRO_NAME" in
+    case "${OS_DISTRO_NAME}" in
     "Ubuntu"*)
         OS_DISTRO_DETECTED="ubuntu"
         ;;
