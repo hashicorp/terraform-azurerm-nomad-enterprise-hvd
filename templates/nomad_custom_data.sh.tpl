@@ -63,7 +63,7 @@ function detect_os_distro {
         OS_DISTRO_DETECTED="debian"
         ;;
     *)
-        log "ERROR" "Unsupported Linux OS distro: '$OS_DISTRO_NAME'. Exiting."
+        log "ERROR" "Unsupported Linux OS distro: '${OS_DISTRO_NAME}'. Exiting."
         exit 1
         ;;
     esac
