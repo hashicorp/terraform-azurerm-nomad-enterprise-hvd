@@ -15,7 +15,7 @@ common_tags = {
 #------------------------------------------------------------------------------
 # Prereqs
 #------------------------------------------------------------------------------
-nomad_key_vault_name                  = "your-key-vault"
+nomad_key_vault_name                  = "<your-key-vault>"
 nomad_license_secret_id               = "<https://my-key-vault.vault.azure.net/secrets/nomad-license>"
 nomad_gossip_encryption_key_secret_id = "<https://my-key-vault.vault.azure.net/secrets/gossip-key>"
 nomad_tls_cert_secret_id              = "<https://my-key-vault.vault.azure.net/secrets/nomad-tls-cert>"
