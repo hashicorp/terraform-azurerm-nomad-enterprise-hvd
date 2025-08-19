@@ -4,7 +4,7 @@ set -euo pipefail
 LOGFILE="/var/log/nomad-cloud-init.log"
 SYSTEMD_DIR="/etc/systemd/system"
 NOMAD_DIR_CONFIG="/etc/nomad.d"
-NOMAD_CONFIG_PATH="${NOMAD_DIR_CONFIG}/nomad.hcl"
+NOMAD_CONFIG_PATH="$${NOMAD_DIR_CONFIG}/nomad.hcl"
 NOMAD_DIR_TLS="/etc/nomad.d/tls"
 NOMAD_DIR_DATA="/opt/nomad/data"
 NOMAD_DIR_LICENSE="/opt/nomad/license"
@@ -49,7 +49,7 @@ function detect_os_distro {
     local OS_DISTRO_NAME=$(grep "^NAME=" /etc/os-release | cut -d'"' -f2)
     local OS_DISTRO_DETECTED
 
-    case "${OS_DISTRO_NAME}" in
+    case "$${OS_DISTRO_NAME}" in
     "Ubuntu"*)
         OS_DISTRO_DETECTED="ubuntu"
         ;;
@@ -63,7 +63,7 @@ function detect_os_distro {
         OS_DISTRO_DETECTED="debian"
         ;;
     *)
-        log "ERROR" "Unsupported Linux OS distro: '${OS_DISTRO_NAME}'. Exiting."
+        log "ERROR" "Unsupported Linux OS distro: '$${OS_DISTRO_NAME}'. Exiting."
         exit 1
         ;;
     esac
@@ -152,8 +152,8 @@ function scrape_vm_info {
     log "INFO" "VM ID: $INSTANCE_ID, Location: $LOCATION, Resource Group: $RESOURCE_GROUP, VMSS Name: $VMSS_NAME."
 }
 
-# For Nomad there are a number of supported runtimes, including Exec, Docker, Podman, raw_exec, and more. This function should be modified 
-# to install the runtime that is appropriate for your environment. By default the no runtimes will be enabled. 
+# For Nomad there are a number of supported runtimes, including Exec, Docker, Podman, raw_exec, and more. This function should be modified
+# to install the runtime that is appropriate for your environment. By default the no runtimes will be enabled.
 function install_runtime {
     log "INFO" "Installing a runtime..."
     log "INFO" "Done installing runtime."
@@ -285,11 +285,11 @@ server {
   enabled          = true
 
   bootstrap_expect = "${nomad_nodes}"
-  license_path     = "${NOMAD_DIR_LICENSE}/license.hclic"
-  encrypt          = "${GOSSIP_ENCRYPTION_KEY}"
+  license_path     = "$${NOMAD_DIR_LICENSE}/license.hclic"
+  encrypt          = "$${GOSSIP_ENCRYPTION_KEY}"
 
   server_join {
-    retry_join = [${NOMAD_SERVERS}]
+    retry_join = [$${NOMAD_SERVERS}]
   }
 }
 
@@ -310,10 +310,10 @@ autopilot {
 tls {
   http      = true
   rpc       = true
-  cert_file = "${NOMAD_DIR_TLS}/cert.pem" 
-  key_file  = "${NOMAD_DIR_TLS}/key.pem"
+  cert_file = "$${NOMAD_DIR_TLS}/cert.pem"
+  key_file  = "$${NOMAD_DIR_TLS}/key.pem"
 %{ if nomad_tls_ca_bundle_secret_id != "NONE" ~}
-  ca_file   = "${NOMAD_DIR_TLS}/bundle.pem"
+  ca_file   = "$${NOMAD_DIR_TLS}/bundle.pem"
 %{ endif ~}
   verify_server_hostname = true
   verify_https_client    = false
@@ -331,7 +331,7 @@ servers = [
 ]
 %{ else }
   server_join {
-    retry_join = [${NOMAD_SERVERS}]
+    retry_join = [$${NOMAD_SERVERS}]
   }
 %{ endif }
 }
@@ -350,8 +350,8 @@ ui {
 }
 EOF
 
-  chown ${NOMAD_USER}:${NOMAD_GROUP} ${NOMAD_CONFIG_PATH}
-  chmod 640 ${NOMAD_CONFIG_PATH}
+  chown $${NOMAD_USER}:$${NOMAD_GROUP} $${NOMAD_CONFIG_PATH}
+  chmod 640 $${NOMAD_CONFIG_PATH}
 }
 
 function configure_systemd {
@@ -416,9 +416,9 @@ function main {
     %{ endif ~}
     %{ if nomad_server ~}
     log "INFO" "Grabbing Secrets from ${nomad_license_secret_id}."
-    retrieve_license "$NOMAD_LICENSE_SECRET_ID" ${nomad_license_secret_id} 
+    retrieve_license "$NOMAD_LICENSE_SECRET_ID" ${nomad_license_secret_id}
     log "INFO" "Grabbing Secrets from ${nomad_gossip_encryption_key_secret_id}."
-    retrieve_gossip_key "$NOMAD_GOSSIP_ENCRYPTION_KEY_ID" ${nomad_gossip_encryption_key_secret_id} 
+    retrieve_gossip_key "$NOMAD_GOSSIP_ENCRYPTION_KEY_ID" ${nomad_gossip_encryption_key_secret_id}
     %{ endif ~}
     %{ if nomad_tls_enabled ~}
     log "INFO" "is ${nomad_tls_enabled} ?."
