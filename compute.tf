@@ -7,8 +7,9 @@
 
 
 locals {
+  custom_startup_script_template = var.custom_startup_script_template != null ? "${path.cwd}/templates/${var.custom_startup_script_template}" : "${path.module}/templates/nomad_custom_data.sh.tpl"
+
   custom_data_args = {
-    custom_startup_script_template = var.custom_startup_script_template != null ? "${path.cwd}/templates/${var.custom_startup_script_template}" : "${path.module}/templates/nomad_custom_data.sh.tpl"
 
     # Prereqs
     nomad_license_secret_id               = var.nomad_license_secret_id
