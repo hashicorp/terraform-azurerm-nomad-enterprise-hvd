@@ -304,16 +304,34 @@ function checksum_verify {
 	sudo rm -f "$${PRODUCT}"_"$${VERSION}"_SHA256SUMS "$${PRODUCT}"_"$${VERSION}"_SHA256SUMS.sig
 
 }
+# install_nomad_binary downloads the Nomad binary and puts it in dedicated bin directory
+function install_nomad_binary {
+  local OS_ARCH="$1"
 
-function install_nomad {
-    log "INFO" "Installing Nomad binary."
+  log "INFO" "Deploying $${PRODUCT} Enterprise binary to $NOMAD_DIR_BIN unzip and set permissions"
+  sudo unzip "$${PRODUCT}"_"$${NOMAD_VERSION}"_"$${OS_ARCH}".zip  nomad -d $NOMAD_DIR_BIN
+  sudo unzip "$${PRODUCT}"_"$${NOMAD_VERSION}"_"$${OS_ARCH}".zip -x nomad -d $NOMAD_DIR_LICENSE
+  sudo rm -f "$${PRODUCT}"_"$${NOMAD_VERSION}"_"$${OS_ARCH}".zip
 
-    sudo curl -sSLo "$NOMAD_DIR_BIN/nomad.zip" "$NOMAD_INSTALL_URL"
-    sudo unzip -o "$NOMAD_DIR_BIN/nomad.zip" -d "$NOMAD_DIR_BIN"
-    sudo rm  "$NOMAD_DIR_BIN/nomad.zip"
+	log "INFO" "Deploying Nomad $NOMAD_DIR_BIN set permissions"
+  sudo chmod 0755 $NOMAD_DIR_BIN/nomad
+  sudo chown $NOMAD_USER:$NOMAD_GROUP $NOMAD_DIR_BIN/nomad
 
-    log "INFO" "Nomad installation complete."
+  log "INFO" "Deploying Nomad create symlink "
+  sudo ln -sf $NOMAD_DIR_BIN/nomad /usr/local/bin/nomad
+
+  log "INFO" "Nomad binary installed successfully at $NOMAD_DIR_BIN/nomad"
 }
+
+# function install_nomad {
+#     log "INFO" "Installing Nomad binary."
+
+#     sudo curl -sSLo "$NOMAD_DIR_BIN/nomad.zip" "$NOMAD_INSTALL_URL"
+#     sudo unzip -o "$NOMAD_DIR_BIN/nomad.zip" -d "$NOMAD_DIR_BIN"
+#     sudo rm  "$NOMAD_DIR_BIN/nomad.zip"
+
+#     log "INFO" "Nomad installation complete."
+# }
 
 function generate_nomad_config {
   log "INFO" "Generating $NOMAD_CONFIG_PATH file."
@@ -483,10 +501,10 @@ function main {
 		checksum_verify $OS_ARCH
     log "INFO" "Checksum verification completed for $${PRODUCT} binary."
 
-    # log "INFO" "Installing Nomad"
-    # install_nomad_binary $OS_ARCH
+    log "INFO" "Installing Nomad"
+    install_nomad_binary $OS_ARCH
 
-		install_nomad
+		# install_nomad
     %{ if nomad_client ~}
     install_runtime
     install_cni_plugins
