@@ -27,7 +27,6 @@ locals {
     cni_dir_bin              = "/opt/cni/bin"
     nomad_dir_config         = "/etc/nomad.d"
     nomad_dir_home           = "/opt/nomad"
-    nomad_install_url        = format("https://releases.hashicorp.com/nomad/%s/nomad_%s_linux_%s.zip", var.nomad_version, var.nomad_version, var.nomad_architecture)
     cni_install_url          = format("https://github.com/containernetworking/plugins/releases/download/v%s/cni-plugins-linux-%s-v%s.tgz", var.cni_version, var.nomad_architecture, var.cni_version)
     azure_location           = var.location
     nomad_tls_enabled        = var.nomad_tls_enabled

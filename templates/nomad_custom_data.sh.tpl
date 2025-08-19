@@ -15,7 +15,6 @@ NOMAD_DIR_BIN="/usr/bin"
 CNI_DIR_BIN="/opt/cni/bin"
 NOMAD_USER="nomad"
 NOMAD_GROUP="nomad"
-NOMAD_INSTALL_URL="${nomad_install_url}"
 PRODUCT="nomad"
 NOMAD_VERSION="${nomad_version}"
 VERSION=$NOMAD_VERSION
@@ -323,15 +322,6 @@ function install_nomad_binary {
   log "INFO" "Nomad binary installed successfully at $NOMAD_DIR_BIN/nomad"
 }
 
-# function install_nomad {
-#     log "INFO" "Installing Nomad binary."
-
-#     sudo curl -sSLo "$NOMAD_DIR_BIN/nomad.zip" "$NOMAD_INSTALL_URL"
-#     sudo unzip -o "$NOMAD_DIR_BIN/nomad.zip" -d "$NOMAD_DIR_BIN"
-#     sudo rm  "$NOMAD_DIR_BIN/nomad.zip"
-
-#     log "INFO" "Nomad installation complete."
-# }
 
 function generate_nomad_config {
   log "INFO" "Generating $NOMAD_CONFIG_PATH file."
