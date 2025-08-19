@@ -48,6 +48,10 @@ The following secrets must be stored in **Azure Key Vault** to bootstrap the Nom
 
 >📝 See the Nomad documentation for more details on securing these secrets in Azure Key Vault.
 
+## Deployment Options
+
+see [Deployment customizations](./docs/nomad-deployment-customizations.md)
+
 ## Usage
 
 1. Configure the [prerequisites](#prerequisites).
@@ -190,6 +194,7 @@ Please note that there is no official Service Level Agreement (SLA) for support 
 | <a name="input_create_nomad_private_dns_record"></a> [create\_nomad\_private\_dns\_record](#input\_create\_nomad\_private\_dns\_record) | Boolean to create a DNS record for nomad in a private Azure DNS zone. `private_dns_zone_name` must also be provided when `true`. | `bool` | `false` | no |
 | <a name="input_create_nomad_public_dns_record"></a> [create\_nomad\_public\_dns\_record](#input\_create\_nomad\_public\_dns\_record) | Boolean to create a DNS record for nomad in a public Azure DNS zone. `public_dns_zone_name` must also be provided when `true`. | `bool` | `false` | no |
 | <a name="input_create_resource_group"></a> [create\_resource\_group](#input\_create\_resource\_group) | Boolean to create a new Azure resource group for this deployment. Set to `false` if you want to use an existing resource group. | `bool` | `false` | no |
+| <a name="input_custom_startup_script_template"></a> [custom\_startup\_script\_template](#input\_custom\_startup\_script\_template) | Name of custom startup script template file. File must exist within a directory named `./templates` within your current working directory. | `string` | `null` | no |
 | <a name="input_disk_size_gb"></a> [disk\_size\_gb](#input\_disk\_size\_gb) | Size of OS disk for Nomad VMs in GB. | `number` | `50` | no |
 | <a name="input_disk_type"></a> [disk\_type](#input\_disk\_type) | Disk type for Nomad VMs. Options: `Standard_LRS`, `Premium_LRS`, etc. | `string` | `"Standard_LRS"` | no |
 | <a name="input_frontend_ip_config_name"></a> [frontend\_ip\_config\_name](#input\_frontend\_ip\_config\_name) | The name of the frontend IP configuration to which the rule is associated. | `string` | `"PublicIPAddress"` | no |

@@ -4,12 +4,12 @@
 #------------------------------------------------------------------------------
 # User Data (cloud-init) Arguments for Nomad on Azure
 #------------------------------------------------------------------------------
-data "azurerm_resource_group" "nomad_rg" {
-  name = var.resource_group_name
-}
+
 
 locals {
   custom_data_args = {
+    custom_startup_script_template = var.custom_startup_script_template != null ? "${path.cwd}/templates/${var.custom_startup_script_template}" : "${path.module}/templates/nomad_custom_data.sh.tpl"
+
     # Prereqs
     nomad_license_secret_id               = var.nomad_license_secret_id
     nomad_gossip_encryption_key_secret_id = var.nomad_gossip_encryption_key_secret_id
@@ -79,23 +79,9 @@ resource "azurerm_linux_virtual_machine_scale_set" "nomad" {
     identity_ids = [azurerm_user_assigned_identity.nomad_vm_identity.id]
   }
 
-  custom_data = base64encode(templatefile("${path.module}/templates/nomad_custom_data.sh.tpl", local.custom_data_args))
-
-  # source_image_id = var.vm_custom_image_name == null ? null : data.azurerm_image.custom[0].id
-
-  # dynamic "source_image_reference" {
-  #   for_each = var.vm_custom_image_name == null ? [true] : []
-
-  #   content {
-  #     publisher = var.vm_image_publisher
-  #     offer     = var.vm_image_offer
-  #     sku       = var.vm_image_sku
-  #     version   = var.vm_image_version
-  #   }
-  # }
+  custom_data = base64encode(templatefile("${local.custom_startup_script_template}", local.custom_data_args))
 
   source_image_id = var.vm_custom_image_name != null ? data.azurerm_image.custom[0].id : null
-
   dynamic "source_image_reference" {
     for_each = var.vm_custom_image_name == null ? [true] : []
 

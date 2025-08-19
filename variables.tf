@@ -339,58 +339,6 @@ variable "vm_custom_image_rg_name" {
   }
 }
 
-# variable "vm_os_distro" {
-#   type        = string
-#   description = "OS distribution type for the Nomad VM. Choose from `Ubuntu`, `RHEL`, or `CentOS`."
-#   default     = "Ubuntu"
-
-#   validation {
-#     condition     = contains(["Ubuntu", "RHEL", "CentOS"], var.vm_os_distro)
-#     error_message = "Valid values are `Ubuntu`, `RHEL`, or `CentOS`."
-#   }
-# }
-
-# variable "vm_sku" {
-#   type        = string
-#   description = "SKU for VM size for the VMSS."
-#   default     = "Standard_D2s_v5"
-
-#   validation {
-#     condition     = can(regex("^[A-Za-z0-9_]+$", var.vm_sku))
-#     error_message = "Value can only contain alphanumeric characters and underscores."
-#   }
-# }
-
-# variable "vm_custom_image_name" {
-#   type        = string
-#   description = "Name of custom VM image to use for VMSS. If not using a custom image, leave this set to null."
-#   default     = null
-# }
-
-# variable "vm_custom_image_rg_name" {
-#   type        = string
-#   description = "Resource Group name where the custom VM image resides. Only valid if `vm_custom_image_name` is not null."
-#   default     = null
-# }
-
-# variable "vm_image_publisher" {
-#   type        = string
-#   description = "Publisher of the VM image."
-#   default     = "Canonical"
-# }
-
-# variable "vm_image_offer" {
-#   type        = string
-#   description = "Offer of the VM image."
-#   default     = "0001-com-ubuntu-server-jammy"
-# }
-
-# variable "vm_image_sku" {
-#   type        = string
-#   description = "SKU of the VM image."
-#   default     = "22_04-lts-gen2"
-# }
-
 variable "vm_size" {
   type        = string
   description = "Azure VM size for Nomad VMs."
@@ -437,4 +385,15 @@ variable "vm_enable_boot_diagnostics" {
   type        = bool
   description = "Boolean to enable boot diagnostics for VMSS."
   default     = true
+}
+
+variable "custom_startup_script_template" {
+  type        = string
+  description = "Name of custom startup script template file. File must exist within a directory named `./templates` within your current working directory."
+  default     = null
+
+  validation {
+    condition     = var.custom_startup_script_template != null ? fileexists("${path.cwd}/templates/${var.custom_startup_script_template}") : true
+    error_message = "File not found. Ensure the file exists within a directory named `./templates` within your current working directory."
+  }
 }
