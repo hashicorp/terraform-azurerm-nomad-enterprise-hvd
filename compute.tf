@@ -44,15 +44,15 @@ locals {
   }
 }
 
-#------------------------------------------------------------------------------
-# Custom VM image lookup
-#------------------------------------------------------------------------------
-data "azurerm_image" "custom" {
-  count = var.vm_custom_image_name == null ? 0 : 1
+# #------------------------------------------------------------------------------
+# # Custom VM image lookup
+# #------------------------------------------------------------------------------
+# data "azurerm_image" "custom" {
+#   count = var.vm_custom_image_name == null ? 0 : 1
 
-  name                = var.vm_custom_image_name
-  resource_group_name = var.vm_custom_image_rg_name
-}
+#   name                = var.vm_custom_image_name
+#   resource_group_name = var.vm_custom_image_rg_name
+# }
 
 #------------------------------------------------------------------------------
 # VM Configuration
@@ -81,16 +81,29 @@ resource "azurerm_linux_virtual_machine_scale_set" "nomad" {
 
   custom_data = base64encode(templatefile("${path.module}/templates/nomad_custom_data.sh.tpl", local.custom_data_args))
 
-  source_image_id = var.vm_custom_image_name == null ? null : data.azurerm_image.custom[0].id
+  # source_image_id = var.vm_custom_image_name == null ? null : data.azurerm_image.custom[0].id
+
+  # dynamic "source_image_reference" {
+  #   for_each = var.vm_custom_image_name == null ? [true] : []
+
+  #   content {
+  #     publisher = var.vm_image_publisher
+  #     offer     = var.vm_image_offer
+  #     sku       = var.vm_image_sku
+  #     version   = var.vm_image_version
+  #   }
+  # }
+
+  source_image_id = var.vm_custom_image_name != null ? data.azurerm_image.custom[0].id : null
 
   dynamic "source_image_reference" {
     for_each = var.vm_custom_image_name == null ? [true] : []
 
     content {
-      publisher = var.vm_image_publisher
-      offer     = var.vm_image_offer
-      sku       = var.vm_image_sku
-      version   = var.vm_image_version
+      publisher = local.vm_image_publisher
+      offer     = local.vm_image_offer
+      sku       = local.vm_image_sku
+      version   = data.azurerm_platform_image.latest_os_image.version
     }
   }
 
