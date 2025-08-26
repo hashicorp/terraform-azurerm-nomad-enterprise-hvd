@@ -66,7 +66,7 @@ function detect_os_distro {
         ;;
     *)
         log "ERROR" "Unsupported Linux OS distro: '$${OS_DISTRO_NAME}'. Exiting."
-        exit 1
+        exit_script 1
         ;;
     esac
 
@@ -89,6 +89,7 @@ function detect_architecture {
     *)
       log "ERROR" "Unsupported architecture detected: '$OS_ARCH_DETECTED'. "
 		  exit_script 1
+			;;
   esac
 
   echo "$ARCHITECTURE"
