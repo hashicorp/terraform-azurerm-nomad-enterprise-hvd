@@ -4,7 +4,7 @@ set -euo pipefail
 LOGFILE="/var/log/nomad-cloud-init.log"
 SYSTEMD_DIR="/etc/systemd/system"
 NOMAD_DIR_CONFIG="/etc/nomad.d"
-NOMAD_CONFIG_PATH="${NOMAD_DIR_CONFIG}/nomad.hcl"
+NOMAD_CONFIG_PATH="$${NOMAD_DIR_CONFIG}/nomad.hcl"
 NOMAD_DIR_TLS="/etc/nomad.d/tls"
 NOMAD_DIR_DATA="/opt/nomad/data"
 NOMAD_DIR_LICENSE="/opt/nomad/license"
@@ -15,7 +15,9 @@ NOMAD_DIR_BIN="/usr/bin"
 CNI_DIR_BIN="/opt/cni/bin"
 NOMAD_USER="nomad"
 NOMAD_GROUP="nomad"
-NOMAD_INSTALL_URL="${nomad_install_url}"
+PRODUCT="nomad"
+NOMAD_VERSION="${nomad_version}"
+VERSION=$NOMAD_VERSION
 CNI_INSTALL_URL="${cni_install_url}"
 REQUIRED_PACKAGES="curl jq unzip"
 ADDITIONAL_PACKAGES="${additional_package_names}"
@@ -49,7 +51,7 @@ function detect_os_distro {
     local OS_DISTRO_NAME=$(grep "^NAME=" /etc/os-release | cut -d'"' -f2)
     local OS_DISTRO_DETECTED
 
-    case "${OS_DISTRO_NAME}" in
+    case "$${OS_DISTRO_NAME}" in
     "Ubuntu"*)
         OS_DISTRO_DETECTED="ubuntu"
         ;;
@@ -63,14 +65,36 @@ function detect_os_distro {
         OS_DISTRO_DETECTED="debian"
         ;;
     *)
-        log "ERROR" "Unsupported Linux OS distro: '${OS_DISTRO_NAME}'. Exiting."
-        exit 1
+        log "ERROR" "Unsupported Linux OS distro: '$${OS_DISTRO_NAME}'. Exiting."
+        exit_script 1
         ;;
     esac
 
     echo "$OS_DISTRO_DETECTED"
 }
+function detect_architecture {
+  local ARCHITECTURE=""
+  local OS_ARCH_DETECTED=$(uname -m)
 
+  case "$OS_ARCH_DETECTED" in
+    "x86_64"*)
+      ARCHITECTURE="linux_amd64"
+      ;;
+    "aarch64"*)
+      ARCHITECTURE="linux_arm64"
+      ;;
+		"arm"*)
+      ARCHITECTURE="linux_arm"
+			;;
+    *)
+      log "ERROR" "Unsupported architecture detected: '$OS_ARCH_DETECTED'. "
+		  exit_script 1
+			;;
+  esac
+
+  echo "$ARCHITECTURE"
+
+}
 function prepare_disk() {
     local device_name=$(readlink -f /dev/disk/azure/scsi1/lun0)
     log "DEBUG" "prepare_disk - device_name; $device_name"
@@ -109,38 +133,25 @@ function install_prereqs {
     fi
 }
 
-function install_azcli {
-  local os_distro="$1"
+function install_azcli() {
+  local OS_DISTRO="$1"
+  local OS_MAJOR_VERSION=$(grep "^VERSION_ID=" /etc/os-release | cut -d"\"" -f2 | cut -d"." -f1)
+	log "INFO" "Detected OS major version: $OS_MAJOR_VERSION"
 
-  if [[ -n "$(command -v az)" ]]; then
+  if command -v az > /dev/null; then
     log "INFO" "Detected 'az' (azure-cli) is already installed. Skipping."
   else
-    if [[ "$os_distro" == "ubuntu" ]]; then
+    if [[ "$OS_DISTRO" == "ubuntu" ]]; then
       log "INFO" "Installing Azure CLI for Ubuntu."
       curl -sL https://aka.ms/InstallAzureCLIDeb | bash
-    elif [[ "$os_distro" == "centos" ]] || [[ "$os_distro" == "rhel" ]]; then
-      log "INFO" "Installing Azure CLI for CentOS/RHEL."
-      rpm --import https://packages.microsoft.com/keys/microsoft.asc
-      cat > /etc/yum.repos.d/azure-cli.repo << EOF
-[azure-cli]
-name=Azure CLI
-baseurl=https://packages.microsoft.com/yumrepos/azure-cli
-enabled=1
-gpgcheck=1
-gpgkey=https://packages.microsoft.com/keys/microsoft.asc
-EOF
+    elif [[ "$OS_DISTRO" == "rhel" || "$OS_DISTRO" == "centos" ]]; then
+      log "INFO" "Installing Azure CLI for RHEL $OS_MAJOR_VERSION."
+			rpm --import https://packages.microsoft.com/keys/microsoft.asc
+      dnf install -y https://packages.microsoft.com/config/rhel/$OS_MAJOR_VERSION/packages-microsoft-prod.rpm
       dnf install -y azure-cli
     fi
   fi
-  log "INFO" "Attempting Azure login using Managed Identity..."
-  if az login --identity &>/dev/null; then
-    log "INFO" "Azure login successful."
-  else
-    log "ERROR" "Azure login failed! Ensure the VM has a Managed Identity."
-    exit 1
-  fi
 }
-
 function scrape_vm_info {
     log "INFO" "Scraping Azure VM metadata."
 
@@ -152,8 +163,8 @@ function scrape_vm_info {
     log "INFO" "VM ID: $INSTANCE_ID, Location: $LOCATION, Resource Group: $RESOURCE_GROUP, VMSS Name: $VMSS_NAME."
 }
 
-# For Nomad there are a number of supported runtimes, including Exec, Docker, Podman, raw_exec, and more. This function should be modified 
-# to install the runtime that is appropriate for your environment. By default the no runtimes will be enabled. 
+# For Nomad there are a number of supported runtimes, including Exec, Docker, Podman, raw_exec, and more. This function should be modified
+# to install the runtime that is appropriate for your environment. By default the no runtimes will be enabled.
 function install_runtime {
     log "INFO" "Installing a runtime..."
     log "INFO" "Done installing runtime."
@@ -240,15 +251,65 @@ function install_cni_plugins {
     tar -C $CNI_DIR_BIN -xzf $CNI_DIR_BIN/cni-plugins.tgz
 }
 
-function install_nomad {
-    log "INFO" "Installing Nomad binary."
+function checksum_verify {
+  local OS_ARCH="$1"
 
-    sudo curl -sSLo "$NOMAD_DIR_BIN/nomad.zip" "$NOMAD_INSTALL_URL"
-    sudo unzip -o "$NOMAD_DIR_BIN/nomad.zip" -d "$NOMAD_DIR_BIN"
-    sudo rm  "$NOMAD_DIR_BIN/nomad.zip"
+  # https://www.hashicorp.com/en/trust/security
+  # checksum_verify downloads the $$PRODUCT binary and verifies its integrity
+  log "INFO" "Verifying the integrity of the $${PRODUCT} binary."
+  export GNUPGHOME=./.gnupg
+  log "INFO" "Importing HashiCorp GPG key."
+  sudo curl -s https://www.hashicorp.com/.well-known/pgp-key.txt | gpg --import
 
-    log "INFO" "Nomad installation complete."
+	log "INFO" "Downloading $${PRODUCT} binary"
+  sudo curl -Os https://releases.hashicorp.com/"$${PRODUCT}"/"$${VERSION}"/"$${PRODUCT}"_"$${VERSION}"_"$${OS_ARCH}".zip
+	log "INFO" "Downloading $${PRODUCT}  Enterprise binary checksum files"
+  sudo curl -Os https://releases.hashicorp.com/"$${PRODUCT}"/"$${VERSION}"/"$${PRODUCT}"_"$${VERSION}"_SHA256SUMS
+	log "INFO" "Downloading $${PRODUCT}  Enterprise binary checksum signature file"
+  sudo curl -Os https://releases.hashicorp.com/"$${PRODUCT}"/"$${VERSION}"/"$${PRODUCT}"_"$${VERSION}"_SHA256SUMS.sig
+  log "INFO" "Verifying the signature file is untampered."
+  gpg --verify "$${PRODUCT}"_"$${VERSION}"_SHA256SUMS.sig "$${PRODUCT}"_"$${VERSION}"_SHA256SUMS
+	if [[ $? -ne 0 ]]; then
+		log "ERROR" "Gpg verification failed for SHA256SUMS."
+		exit_script 1
+	fi
+  if [ -x "$(command -v sha256sum)" ]; then
+		log "INFO" "Using sha256sum to verify the checksum of the $${PRODUCT} binary."
+		sha256sum -c "$${PRODUCT}"_"$${VERSION}"_SHA256SUMS --ignore-missing
+	else
+		log "INFO" "Using shasum to verify the checksum of the $${PRODUCT} binary."
+		shasum -a 256 -c "$${PRODUCT}"_"$${VERSION}"_SHA256SUMS --ignore-missing
+	fi
+	if [[ $? -ne 0 ]]; then
+		log "ERROR" "Checksum verification failed for the $${PRODUCT} binary."
+		exit_script 1
+	fi
+
+	log "INFO" "Checksum verification passed for the $${PRODUCT} binary."
+
+	log "INFO" "Removing the downloaded files to clean up"
+	sudo rm -f "$${PRODUCT}"_"$${VERSION}"_SHA256SUMS "$${PRODUCT}"_"$${VERSION}"_SHA256SUMS.sig
+
 }
+# install_nomad_binary downloads the Nomad binary and puts it in dedicated bin directory
+function install_nomad_binary {
+  local OS_ARCH="$1"
+
+  log "INFO" "Deploying $${PRODUCT} Enterprise binary to $NOMAD_DIR_BIN unzip and set permissions"
+  sudo unzip "$${PRODUCT}"_"$${NOMAD_VERSION}"_"$${OS_ARCH}".zip  nomad -d $NOMAD_DIR_BIN
+  sudo unzip "$${PRODUCT}"_"$${NOMAD_VERSION}"_"$${OS_ARCH}".zip -x nomad -d $NOMAD_DIR_LICENSE
+  sudo rm -f "$${PRODUCT}"_"$${NOMAD_VERSION}"_"$${OS_ARCH}".zip
+
+	log "INFO" "Deploying Nomad $NOMAD_DIR_BIN set permissions"
+  sudo chmod 0755 $NOMAD_DIR_BIN/nomad
+  sudo chown $NOMAD_USER:$NOMAD_GROUP $NOMAD_DIR_BIN/nomad
+
+  log "INFO" "Deploying Nomad create symlink "
+  sudo ln -sf $NOMAD_DIR_BIN/nomad /usr/local/bin/nomad
+
+  log "INFO" "Nomad binary installed successfully at $NOMAD_DIR_BIN/nomad"
+}
+
 
 function generate_nomad_config {
   log "INFO" "Generating $NOMAD_CONFIG_PATH file."
@@ -285,11 +346,11 @@ server {
   enabled          = true
 
   bootstrap_expect = "${nomad_nodes}"
-  license_path     = "${NOMAD_DIR_LICENSE}/license.hclic"
-  encrypt          = "${GOSSIP_ENCRYPTION_KEY}"
+  license_path     = "$${NOMAD_DIR_LICENSE}/license.hclic"
+  encrypt          = "$${GOSSIP_ENCRYPTION_KEY}"
 
   server_join {
-    retry_join = [${NOMAD_SERVERS}]
+    retry_join = [$${NOMAD_SERVERS}]
   }
 }
 
@@ -310,10 +371,10 @@ autopilot {
 tls {
   http      = true
   rpc       = true
-  cert_file = "${NOMAD_DIR_TLS}/cert.pem" 
-  key_file  = "${NOMAD_DIR_TLS}/key.pem"
+  cert_file = "$${NOMAD_DIR_TLS}/cert.pem"
+  key_file  = "$${NOMAD_DIR_TLS}/key.pem"
 %{ if nomad_tls_ca_bundle_secret_id != "NONE" ~}
-  ca_file   = "${NOMAD_DIR_TLS}/bundle.pem"
+  ca_file   = "$${NOMAD_DIR_TLS}/bundle.pem"
 %{ endif ~}
   verify_server_hostname = true
   verify_https_client    = false
@@ -331,7 +392,7 @@ servers = [
 ]
 %{ else }
   server_join {
-    retry_join = [${NOMAD_SERVERS}]
+    retry_join = [$${NOMAD_SERVERS}]
   }
 %{ endif }
 }
@@ -350,8 +411,8 @@ ui {
 }
 EOF
 
-  chown ${NOMAD_USER}:${NOMAD_GROUP} ${NOMAD_CONFIG_PATH}
-  chmod 640 ${NOMAD_CONFIG_PATH}
+  chown $${NOMAD_USER}:$${NOMAD_GROUP} $${NOMAD_CONFIG_PATH}
+  chmod 640 $${NOMAD_CONFIG_PATH}
 }
 
 function configure_systemd {
@@ -401,24 +462,44 @@ function exit_script {
 
 function main {
     log "INFO" "Starting Nomad setup."
-    OS_DISTRO=$(detect_os_distro)
+
+		OS_DISTRO=$(detect_os_distro)
     log "INFO" "Detected Linux OS distro is '$OS_DISTRO'."
+
+    OS_ARCH=$(detect_architecture)
+    log "INFO" "Detected system architecture is '$OS_ARCH'."
+
     scrape_vm_info
     install_prereqs "$OS_DISTRO"
     install_azcli "$OS_DISTRO"
+		log "INFO" "Attempting Azure login using Managed Identity..."
+    if az login --identity &>/dev/null; then
+      log "INFO" "Azure login successful."
+    else
+      log "ERROR" "Azure login failed! Ensure the VM has a Managed Identity."
+    exit_script 1
+    fi
+
     prepare_disk "/var/lib/nomad" "nomad_data"
     create_user_and_group
     create_directories
-    install_nomad
+
+		checksum_verify $OS_ARCH
+    log "INFO" "Checksum verification completed for $${PRODUCT} binary."
+
+    log "INFO" "Installing Nomad"
+    install_nomad_binary $OS_ARCH
+
+		# install_nomad
     %{ if nomad_client ~}
     install_runtime
     install_cni_plugins
     %{ endif ~}
     %{ if nomad_server ~}
     log "INFO" "Grabbing Secrets from ${nomad_license_secret_id}."
-    retrieve_license "$NOMAD_LICENSE_SECRET_ID" ${nomad_license_secret_id} 
+    retrieve_license "$NOMAD_LICENSE_SECRET_ID" ${nomad_license_secret_id}
     log "INFO" "Grabbing Secrets from ${nomad_gossip_encryption_key_secret_id}."
-    retrieve_gossip_key "$NOMAD_GOSSIP_ENCRYPTION_KEY_ID" ${nomad_gossip_encryption_key_secret_id} 
+    retrieve_gossip_key "$NOMAD_GOSSIP_ENCRYPTION_KEY_ID" ${nomad_gossip_encryption_key_secret_id}
     %{ endif ~}
     %{ if nomad_tls_enabled ~}
     log "INFO" "is ${nomad_tls_enabled} ?."

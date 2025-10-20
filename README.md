@@ -48,6 +48,10 @@ The following secrets must be stored in **Azure Key Vault** to bootstrap the Nom
 
 >📝 See the Nomad documentation for more details on securing these secrets in Azure Key Vault.
 
+## Deployment Options
+
+see [Deployment customizations](./docs/nomad-deployment-customizations.md)
+
 ## Usage
 
 1. Configure the [prerequisites](#prerequisites).
@@ -158,6 +162,7 @@ Please note that there is no official Service Level Agreement (SLA) for support 
 | [azurerm_dns_zone.nomad](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/dns_zone) | data source |
 | [azurerm_image.custom](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/image) | data source |
 | [azurerm_key_vault.nomad_keyvault](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/key_vault) | data source |
+| [azurerm_platform_image.latest_os_image](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/platform_image) | data source |
 | [azurerm_private_dns_zone.nomad](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/private_dns_zone) | data source |
 | [azurerm_resource_group.nomad](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/resource_group) | data source |
 | [azurerm_resource_group.nomad_rg](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/resource_group) | data source |
@@ -189,6 +194,7 @@ Please note that there is no official Service Level Agreement (SLA) for support 
 | <a name="input_create_nomad_private_dns_record"></a> [create\_nomad\_private\_dns\_record](#input\_create\_nomad\_private\_dns\_record) | Boolean to create a DNS record for nomad in a private Azure DNS zone. `private_dns_zone_name` must also be provided when `true`. | `bool` | `false` | no |
 | <a name="input_create_nomad_public_dns_record"></a> [create\_nomad\_public\_dns\_record](#input\_create\_nomad\_public\_dns\_record) | Boolean to create a DNS record for nomad in a public Azure DNS zone. `public_dns_zone_name` must also be provided when `true`. | `bool` | `false` | no |
 | <a name="input_create_resource_group"></a> [create\_resource\_group](#input\_create\_resource\_group) | Boolean to create a new Azure resource group for this deployment. Set to `false` if you want to use an existing resource group. | `bool` | `false` | no |
+| <a name="input_custom_startup_script_template"></a> [custom\_startup\_script\_template](#input\_custom\_startup\_script\_template) | Name of custom startup script template file. File must exist within a directory named `./templates` within your current working directory. | `string` | `null` | no |
 | <a name="input_disk_size_gb"></a> [disk\_size\_gb](#input\_disk\_size\_gb) | Size of OS disk for Nomad VMs in GB. | `number` | `50` | no |
 | <a name="input_disk_type"></a> [disk\_type](#input\_disk\_type) | Disk type for Nomad VMs. Options: `Standard_LRS`, `Premium_LRS`, etc. | `string` | `"Standard_LRS"` | no |
 | <a name="input_frontend_ip_config_name"></a> [frontend\_ip\_config\_name](#input\_frontend\_ip\_config\_name) | The name of the frontend IP configuration to which the rule is associated. | `string` | `"PublicIPAddress"` | no |
@@ -217,16 +223,12 @@ Please note that there is no official Service Level Agreement (SLA) for support 
 | <a name="input_private_dns_zone_rg"></a> [private\_dns\_zone\_rg](#input\_private\_dns\_zone\_rg) | Name of Resource Group where `private_dns_zone_name` resides. Required when `create_nomad_private_dns_record` is `true`. | `string` | `null` | no |
 | <a name="input_public_dns_zone_name"></a> [public\_dns\_zone\_name](#input\_public\_dns\_zone\_name) | Name of existing public Azure DNS zone to create DNS record in. Required when `create_nomad_public_dns_record` is `true`. | `string` | `null` | no |
 | <a name="input_public_dns_zone_rg"></a> [public\_dns\_zone\_rg](#input\_public\_dns\_zone\_rg) | Name of Resource Group where `public_dns_zone_name` resides. Required when `create_nomad_public_dns_record` is `true`. | `string` | `null` | no |
-| <a name="input_vm_custom_image_name"></a> [vm\_custom\_image\_name](#input\_vm\_custom\_image\_name) | Name of custom VM image to use for VMSS. If not using a custom image, leave this set to null. | `string` | `null` | no |
-| <a name="input_vm_custom_image_rg_name"></a> [vm\_custom\_image\_rg\_name](#input\_vm\_custom\_image\_rg\_name) | Resource Group name where the custom VM image resides. Only valid if `vm_custom_image_name` is not null. | `string` | `null` | no |
+| <a name="input_vm_custom_image_name"></a> [vm\_custom\_image\_name](#input\_vm\_custom\_image\_name) | Name of custom VM image to use for VMSS. If not using a custom image, leave this blank. | `string` | `null` | no |
+| <a name="input_vm_custom_image_rg_name"></a> [vm\_custom\_image\_rg\_name](#input\_vm\_custom\_image\_rg\_name) | Name of Resource Group where `vm_custom_image_name` image resides. Only valid if `vm_custom_image_name` is not `null`. | `string` | `null` | no |
 | <a name="input_vm_enable_boot_diagnostics"></a> [vm\_enable\_boot\_diagnostics](#input\_vm\_enable\_boot\_diagnostics) | Boolean to enable boot diagnostics for VMSS. | `bool` | `true` | no |
-| <a name="input_vm_image_offer"></a> [vm\_image\_offer](#input\_vm\_image\_offer) | Offer of the VM image. | `string` | `"0001-com-ubuntu-server-jammy"` | no |
-| <a name="input_vm_image_publisher"></a> [vm\_image\_publisher](#input\_vm\_image\_publisher) | Publisher of the VM image. | `string` | `"Canonical"` | no |
-| <a name="input_vm_image_sku"></a> [vm\_image\_sku](#input\_vm\_image\_sku) | SKU of the VM image. | `string` | `"22_04-lts-gen2"` | no |
 | <a name="input_vm_image_version"></a> [vm\_image\_version](#input\_vm\_image\_version) | Version of the VM image. | `string` | `"latest"` | no |
-| <a name="input_vm_os_distro"></a> [vm\_os\_distro](#input\_vm\_os\_distro) | OS distribution type for the Nomad VM. Choose from `Ubuntu`, `RHEL`, or `CentOS`. | `string` | `"Ubuntu"` | no |
+| <a name="input_vm_os_image"></a> [vm\_os\_image](#input\_vm\_os\_image) | The OS image to use for the VM. Options are: redhat8, redhat9, ubuntu2204, ubuntu2404. | `string` | `"ubuntu2404"` | no |
 | <a name="input_vm_size"></a> [vm\_size](#input\_vm\_size) | Azure VM size for Nomad VMs. | `string` | `"Standard_D2s_v3"` | no |
-| <a name="input_vm_sku"></a> [vm\_sku](#input\_vm\_sku) | SKU for VM size for the VMSS. | `string` | `"Standard_D2s_v5"` | no |
 | <a name="input_vm_ssh_public_key"></a> [vm\_ssh\_public\_key](#input\_vm\_ssh\_public\_key) | SSH public key for VMs in VMSS. | `string` | `null` | no |
 
 ## Outputs

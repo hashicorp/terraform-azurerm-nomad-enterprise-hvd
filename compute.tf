@@ -4,12 +4,13 @@
 #------------------------------------------------------------------------------
 # User Data (cloud-init) Arguments for Nomad on Azure
 #------------------------------------------------------------------------------
-data "azurerm_resource_group" "nomad_rg" {
-  name = var.resource_group_name
-}
+
 
 locals {
+  custom_startup_script_template = var.custom_startup_script_template != null ? "${path.cwd}/templates/${var.custom_startup_script_template}" : "${path.module}/templates/nomad_custom_data.sh.tpl"
+
   custom_data_args = {
+
     # Prereqs
     nomad_license_secret_id               = var.nomad_license_secret_id
     nomad_gossip_encryption_key_secret_id = var.nomad_gossip_encryption_key_secret_id
@@ -26,7 +27,6 @@ locals {
     cni_dir_bin              = "/opt/cni/bin"
     nomad_dir_config         = "/etc/nomad.d"
     nomad_dir_home           = "/opt/nomad"
-    nomad_install_url        = format("https://releases.hashicorp.com/nomad/%s/nomad_%s_linux_%s.zip", var.nomad_version, var.nomad_version, var.nomad_architecture)
     cni_install_url          = format("https://github.com/containernetworking/plugins/releases/download/v%s/cni-plugins-linux-%s-v%s.tgz", var.cni_version, var.nomad_architecture, var.cni_version)
     azure_location           = var.location
     nomad_tls_enabled        = var.nomad_tls_enabled
@@ -44,15 +44,15 @@ locals {
   }
 }
 
-#------------------------------------------------------------------------------
-# Custom VM image lookup
-#------------------------------------------------------------------------------
-data "azurerm_image" "custom" {
-  count = var.vm_custom_image_name == null ? 0 : 1
+# #------------------------------------------------------------------------------
+# # Custom VM image lookup
+# #------------------------------------------------------------------------------
+# data "azurerm_image" "custom" {
+#   count = var.vm_custom_image_name == null ? 0 : 1
 
-  name                = var.vm_custom_image_name
-  resource_group_name = var.vm_custom_image_rg_name
-}
+#   name                = var.vm_custom_image_name
+#   resource_group_name = var.vm_custom_image_rg_name
+# }
 
 #------------------------------------------------------------------------------
 # VM Configuration
@@ -79,18 +79,17 @@ resource "azurerm_linux_virtual_machine_scale_set" "nomad" {
     identity_ids = [azurerm_user_assigned_identity.nomad_vm_identity.id]
   }
 
-  custom_data = base64encode(templatefile("${path.module}/templates/nomad_custom_data.sh.tpl", local.custom_data_args))
+  custom_data = base64encode(templatefile("${local.custom_startup_script_template}", local.custom_data_args))
 
-  source_image_id = var.vm_custom_image_name == null ? null : data.azurerm_image.custom[0].id
-
+  source_image_id = var.vm_custom_image_name != null ? data.azurerm_image.custom[0].id : null
   dynamic "source_image_reference" {
     for_each = var.vm_custom_image_name == null ? [true] : []
 
     content {
-      publisher = var.vm_image_publisher
-      offer     = var.vm_image_offer
-      sku       = var.vm_image_sku
-      version   = var.vm_image_version
+      publisher = local.vm_image_publisher
+      offer     = local.vm_image_offer
+      sku       = local.vm_image_sku
+      version   = data.azurerm_platform_image.latest_os_image.version
     }
   }
 
