@@ -41,6 +41,8 @@ locals {
     nomad_upstream_tag_value = var.nomad_upstream_tag_value
     nomad_nodes              = var.nomad_nodes
     autopilot_health_enabled = var.autopilot_health_enabled
+
+    nomad_bootstrap_azure_client_id = azurerm_user_assigned_identity.nomad_vm_identity.client_id
   }
 }
 

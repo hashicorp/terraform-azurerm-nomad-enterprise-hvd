@@ -36,6 +36,7 @@ NOMAD_LOCATION="${nomad_location}"
 NOMAD_UI_ENABLED="${nomad_ui_enabled}"
 NOMAD_NODES="${nomad_nodes}"
 AUTOPILOT_HEALTH_ENABLED="${autopilot_health_enabled}"
+NOMAD_BOOTSTRAP_AZURE_CLIENT_ID="${nomad_bootstrap_azure_client_id}"
 
 
 function log {
@@ -473,7 +474,7 @@ function main {
     install_prereqs "$OS_DISTRO"
     install_azcli "$OS_DISTRO"
 		log "INFO" "Attempting Azure login using Managed Identity..."
-    if az login --identity &>/dev/null; then
+    if az login --identity --client-id "$NOMAD_BOOTSTRAP_AZURE_CLIENT_ID" --allow-no-subscriptions &>/dev/null; then
       log "INFO" "Azure login successful."
     else
       log "ERROR" "Azure login failed! Ensure the VM has a Managed Identity."
