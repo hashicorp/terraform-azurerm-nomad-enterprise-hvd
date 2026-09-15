@@ -29,6 +29,8 @@ resource "azurerm_role_assignment" "nomad_vm_reader_role" {
 }
 
 resource "azurerm_key_vault_access_policy" "nomad_vmss_keyvault_access" {
+  count = var.use_key_vault_rbac ? 0 : 1
+
   key_vault_id = data.azurerm_key_vault.nomad_keyvault.id
   tenant_id    = data.azurerm_client_config.current.tenant_id
   object_id    = azurerm_user_assigned_identity.nomad_vm_identity.principal_id
@@ -37,4 +39,12 @@ resource "azurerm_key_vault_access_policy" "nomad_vmss_keyvault_access" {
     "Get",
     "List"
   ]
+}
+
+resource "azurerm_role_assignment" "nomad_vmss_keyvault_secrets_user" {
+  count = var.use_key_vault_rbac ? 1 : 0
+
+  principal_id         = azurerm_user_assigned_identity.nomad_vm_identity.principal_id
+  role_definition_name = "Key Vault Secrets User"
+  scope                = data.azurerm_key_vault.nomad_keyvault.id
 }

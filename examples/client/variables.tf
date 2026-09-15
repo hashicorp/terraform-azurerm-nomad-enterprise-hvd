@@ -60,6 +60,13 @@ variable "nomad_key_vault_name" {
   description = "ID of Azure Key Vault secret for Nomad license file."
   default     = null
 }
+
+variable "use_key_vault_rbac" {
+  type        = bool
+  description = "Use Azure RBAC instead of a Key Vault access policy to grant the Nomad VM identity access to secrets."
+  default     = false
+}
+
 variable "nomad_license_secret_id" {
   type        = string
   description = "ID of Azure Key Vault secret for Nomad license file."

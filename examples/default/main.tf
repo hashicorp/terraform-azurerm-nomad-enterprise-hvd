@@ -25,6 +25,7 @@ module "nomad" {
 
   # --- Bootstrap --- #
   nomad_key_vault_name                  = var.nomad_key_vault_name
+  use_key_vault_rbac                    = var.use_key_vault_rbac
   nomad_license_secret_id               = var.nomad_license_secret_id
   nomad_gossip_encryption_key_secret_id = var.nomad_gossip_encryption_key_secret_id
   nomad_tls_cert_secret_id              = var.nomad_tls_cert_secret_id
