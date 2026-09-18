@@ -230,16 +230,37 @@ function create_directories {
         "$NOMAD_DIR_LOGS"
         "$NOMAD_DIR_BIN"
         "$CNI_DIR_BIN"
-        "$NOMAD_DIR_ALLOC_MOUNTS"
     )
 
     for dir in "$${directories[@]}"; do
         mkdir -p "$dir"
-        chown "$NOMAD_USER:$NOMAD_GROUP" "$dir"
-        chmod 755 "$dir"
+        if [[ "$NOMAD_CLIENT" == "true" ]]; then
+            # Nomad clients must own all directories as root:root with strict 0700 permissions.
+            # This satisfies HashiCorp production requirements for task isolation and security.
+            chown root:root "$dir"
+            chmod 0700 "$dir"
+        else
+            chown "$NOMAD_USER:$NOMAD_GROUP" "$dir"
+            chmod 0750 "$dir"
+        fi
     done
 
     log "INFO" "Required directories created."
+}
+
+function configure_client_sysctl {
+    log "INFO" "Configuring sysctl settings for Nomad client."
+
+    # Reserve the IANA ephemeral port range for Nomad client task group port allocations.
+    # This prevents the kernel from assigning ports in the 49152-65535 range to outbound
+    # connections, which could conflict with Nomad-allocated ports.
+    cat > /etc/sysctl.d/10-nomad-client.conf <<EOF
+net.ipv4.ip_local_port_range = 49152 65535
+EOF
+
+    sysctl --system
+
+    log "INFO" "Nomad client sysctl settings applied."
 }
 
 function install_cni_plugins {
@@ -419,6 +440,15 @@ EOF
 function configure_systemd {
     log "INFO" "Configuring Nomad systemd service."
 
+    if [[ "$NOMAD_CLIENT" == "true" ]]; then
+        # Nomad clients must run as root to manage cgroups, network namespaces, and task isolation.
+        SERVICE_USER="root"
+        SERVICE_GROUP="root"
+    else
+        SERVICE_USER="$NOMAD_USER"
+        SERVICE_GROUP="$NOMAD_GROUP"
+    fi
+
     cat > "$SYSTEMD_DIR/nomad.service" <<EOF
 [Unit]
 Description=HashiCorp Nomad
@@ -427,8 +457,8 @@ Wants=network-online.target
 After=network-online.target
 
 [Service]
-User=$NOMAD_USER
-Group=$NOMAD_GROUP
+User=$SERVICE_USER
+Group=$SERVICE_GROUP
 ExecStart=$NOMAD_DIR_BIN/nomad agent -config=$NOMAD_DIR_CONFIG/nomad.hcl
 Restart=on-failure
 LimitNOFILE=65536
@@ -495,6 +525,7 @@ function main {
     %{ if nomad_client ~}
     install_runtime
     install_cni_plugins
+    configure_client_sysctl
     %{ endif ~}
     %{ if nomad_server ~}
     log "INFO" "Grabbing Secrets from ${nomad_license_secret_id}."

@@ -176,9 +176,9 @@ Please note that there is no official Service Level Agreement (SLA) for support 
 | ---- | ----------- | ---- | ------- | :------: |
 | <a name="input_friendly_name_prefix"></a> [friendly\_name\_prefix](#input\_friendly\_name\_prefix) | Friendly name prefix used for uniquely naming Azure resources. | `string` | n/a | yes |
 | <a name="input_location"></a> [location](#input\_location) | Azure region to use for this deployment. | `string` | n/a | yes |
-| <a name="input_nomad_client"></a> [nomad\_client](#input\_nomad\_client) | Enable the Nomad client agent. | `bool` | n/a | yes |
+| <a name="input_nomad_client"></a> [nomad\_client](#input\_nomad\_client) | Boolean to enable the Nomad client agent. Exactly one of `nomad_client` or `nomad_server` must be `true`. | `bool` | n/a | yes |
 | <a name="input_nomad_datacenter"></a> [nomad\_datacenter](#input\_nomad\_datacenter) | Specifies the data center of the local agent. | `string` | n/a | yes |
-| <a name="input_nomad_server"></a> [nomad\_server](#input\_nomad\_server) | Enable the Nomad server agent. | `bool` | n/a | yes |
+| <a name="input_nomad_server"></a> [nomad\_server](#input\_nomad\_server) | Boolean to enable the Nomad server agent. Exactly one of `nomad_client` or `nomad_server` must be `true`. | `bool` | n/a | yes |
 | <a name="input_resource_group_name"></a> [resource\_group\_name](#input\_resource\_group\_name) | Name of Azure resource group to create or name of existing resource group to use (if `create_resource_group` is `false`). | `string` | n/a | yes |
 | <a name="input_subnet_id"></a> [subnet\_id](#input\_subnet\_id) | Azure subnet ID for Nomad instance network interface. | `string` | n/a | yes |
 | <a name="input_vnet_id"></a> [vnet\_id](#input\_vnet\_id) | ID of the Azure VNet where resources are deployed. | `string` | n/a | yes |
