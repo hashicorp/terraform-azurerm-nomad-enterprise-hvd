@@ -50,7 +50,7 @@ The following secrets must be stored in **Azure Key Vault** to bootstrap the Nom
 
 ## Deployment Options
 
-see [Deployment customizations](./docs/nomad-deployment-customizations.md)
+see [Deployment customizations](https://github.com/hashicorp/terraform-azurerm-nomad-enterprise-hvd/blob/0.2.0/docs/nomad-deployment-customizations.md)
 
 ## Usage
 
